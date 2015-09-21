@@ -15,7 +15,4 @@ var app = angular.module('app',['ngAria','ngRoute', 'ngAnimate','ngSanitize','mg
         .otherwise({
             redirectTo: '/'
         });
-    //angular.extend($asideProvider.defaults, {
-        //html: true
-    //});
 }]);
