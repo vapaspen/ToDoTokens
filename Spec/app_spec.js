@@ -34,13 +34,19 @@ describe('App routing checks: ', function(){
     });
 
     describe('List routes: ', function(){
+        beforeEach(inject(function(){
+            $location.path('/list/1');
+            $rootScope.$digest();
+        }))
+
+
+
         it('should have a route to a users List page with a controller.', function(){
 
-            $location.path('/list');
-            $rootScope.$digest();
-            expect($location.path()).toBe('/list');
 
-            expect(route.routes['/list'].templateUrl).toEqual('templates/activeList.html');
+            expect($location.path()).toBe('/list/1');
+
+            expect(route.current.templateUrl).toEqual('templates/activeList.html');
             expect(route.current.controller).toBe('ListCtrl');
         })
     });

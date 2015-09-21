@@ -8,7 +8,7 @@ var app = angular.module('app',['ngAria','ngRoute', 'ngAnimate','ngSanitize','mg
             templateUrl : 'templates/default.html',
             controller : 'HomeCtrl'
         })
-        .when('/list', {
+        .when('/list/:userID', {
             templateUrl : 'templates/activeList.html',
             controller : 'ListCtrl'
         })
