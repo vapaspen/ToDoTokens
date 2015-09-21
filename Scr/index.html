@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Angular Main -->
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.1/angular.min.js"></script>
+
+        <!-- Angular testing Libraries -->
+        <link rel="shortcut icon" type="image/png" href="lib/jasmine-2.3.4/jasmine_favicon.png">
+        <link rel="stylesheet" href="../lib/jasmine-2.3.4/jasmine.css" title="jasmineCSS">
+
+        <script src="../lib/jasmine-2.3.4/jasmine.js"></script>
+        <script src="../lib/jasmine-2.3.4/jasmine-html.js"></script>
+        <script src="../lib/jasmine-2.3.4/bootNW.js"></script>
+
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.1/angular-mocks.js"></script>
+        <script src="../lib/mock-http-fix.js"></script>
+
+        <!-- Styles -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//mgcrea.github.io/angular-strap/styles/libs.min.css">
+
+
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+        <!-- Angular Modules -->
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.1/angular-aria.js"></script>
+        <script src="//cdn.jsdelivr.net/angularjs/1.4.2/angular-animate.min.js" data-semver="1.4.2"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.1/angular-sanitize.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.4/angular-route.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/angular-strap/2.1.2/angular-strap.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/angular-strap/2.1.2/angular-strap.tpl.min.js"></script>
+
+        <!-- Database libraries -->
+        <script src="https://cdn.firebase.com/js/client/2.2.9/firebase.js"></script>
+        <script src="https://cdn.firebase.com/libs/angularfire/1.1.2/angularfire.min.js"></script>
+
+        <!-- Boostrap -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+
+
+
+        <!--Source files -->
+        <script src="app/app.js"></script>
+        <script src="app/controllers.js"></script>
+        <script src="app/services.js"></script>
+
+        <!--Spec Files -->
+        <script src="../Spec/app_Spec.js"></script>
+        <script src="../Spec/controllers_Spec.js"></script>
+        <script src="../Spec/services_Spec.js"></script>
+    </head>
+<body>
+    <div ng-app="app">
+        <div ng-view class="container"></div>
+    </div>
+</body>
+</html>
