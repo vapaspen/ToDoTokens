@@ -2,11 +2,12 @@
 
 describe('App routing checks: ', function(){
     beforeEach(module('app', 'httpReal'));
-    var route, $rootScope, $location;
+    var route, $rootScope, $location, title;
     beforeEach(inject(function(_$route_, _$location_, _$rootScope_) {
             route = _$route_;
             $rootScope = _$rootScope_;
             $location =_$location_;
+
         }));
 
     describe('Home routes:', function(){
@@ -19,7 +20,7 @@ describe('App routing checks: ', function(){
 
         });
 
-        it('should redirect to the index path on non-existent route.', function(){
+        it('should redirect to the default page on non-existent route.', function(){
             expect($location.path()).toBe('');
 
             $location.path('/a/non-existent/route');
@@ -30,16 +31,16 @@ describe('App routing checks: ', function(){
 
         });
 
-
     });
 
     describe('List routes: ', function(){
+
+
         beforeEach(inject(function(){
             $location.path('/list/1');
             $rootScope.$digest();
+
         }))
-
-
 
         it('should have a route to a users List page with a controller.', function(){
 
@@ -48,7 +49,13 @@ describe('App routing checks: ', function(){
 
             expect(route.current.templateUrl).toEqual('templates/activeList.html');
             expect(route.current.controller).toBe('ListCtrl');
-        })
+        });
+
+        it('should have rout parameters. ', function(){
+            var routeParams = route.current.params
+            expect(routeParams.userID).toEqual('1');
+        });
+
     });
 
 });
