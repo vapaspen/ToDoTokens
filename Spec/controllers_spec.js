@@ -9,15 +9,14 @@
         $rootScope = _$rootScope_;
     }));
 
+    /*
     describe('Home Controller tests:', function(){
         var $scope = {};
         beforeEach(inject(function($controller){
             $controller('HomeCtrl', {'$scope' : $scope});
         }));
+    */
 
-        it('Should have a userRef to be the firebase database URL.', function(){
-            expect($scope.userRef).toEqual('https://todotokens.firebaseio.com/users')
-        });
 
 
     });

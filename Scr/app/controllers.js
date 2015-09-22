@@ -1,16 +1,12 @@
 'use strict';
 
 //Controller for Default Page. Used to manage User selection Display
-app.controller('HomeCtrl', ['$scope', '$firebaseArray', 'DBURL', 'userList',   function($scope, $firebaseArray, DBURL, userList){
-    $scope.userRef = DBURL+'users';
-    var fireRef = new Firebase($scope.userRef);
-
-    userList = $firebaseArray(fireRef)
-    $scope.userList = userList
+app.controller('HomeCtrl', ['$scope', 'FetchUsers',    function($scope,FetchUsers){
+    $scope.userList = FetchUsers()
 }]);
 
 //Controller for List Page. Used to manage User List page Display
-app.controller('ListCtrl', ['$scope', 'userList', function($scope, userList){
-    $scope.title = userList[1].firstname + "'s List";
-    $scope.firstName = userList[1].firstname;
+app.controller('ListCtrl', ['$scope', function($scope){
+    $scope.title = "Users's List";
+    $scope.firstName = 'Users';
 }]);

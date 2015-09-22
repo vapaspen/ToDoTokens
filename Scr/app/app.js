@@ -1,7 +1,7 @@
 'use strict';
 
 //main App initializer
-var app = angular.module('app',['ngAria','ngRoute', 'ngAnimate','ngSanitize','mgcrea.ngStrap', 'firebase'])
+var app = angular.module('app',['ngAria','ngRoute', 'ngAnimate','ngSanitize','mgcrea.ngStrap', 'UserDataServices'])
     .config(['$routeProvider', function($routeProvider) {
     $routeProvider
         .when('/', {
@@ -17,6 +17,3 @@ var app = angular.module('app',['ngAria','ngRoute', 'ngAnimate','ngSanitize','mg
         });
 }])
 
-.value('DBURL','https://todotokens.firebaseio.com/')
-
-.value('userList', []);

@@ -9,10 +9,8 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-xs-5" ng-repeat="user in userList">
-                <a href="#list/$index">{{user.firstname}}</a>
+                <a href="#list/{{user.ID}}">{{user.firstname}}</a>
             </div>
         </div>
     </div>
-    DEFAULT
-    <a href="#list/1">LIST</a>
 </body>
