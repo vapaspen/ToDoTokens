@@ -6,6 +6,13 @@
     <div class="page-header">
         <h1><a href="#/">To Do Tokens</a></h1>
     </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-5" ng-repeat="user in userList">
+                <a href="#list/$index">{{user.firstname}}</a>
+            </div>
+        </div>
+    </div>
     DEFAULT
     <a href="#list/1">LIST</a>
 </body>

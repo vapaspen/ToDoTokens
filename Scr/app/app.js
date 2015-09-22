@@ -15,4 +15,8 @@ var app = angular.module('app',['ngAria','ngRoute', 'ngAnimate','ngSanitize','mg
         .otherwise({
             redirectTo: '/'
         });
-}]);
+}])
+
+.value('DBURL','https://todotokens.firebaseio.com/')
+
+.value('userList', []);
