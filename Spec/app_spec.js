@@ -51,7 +51,7 @@ describe('App routing checks: ', function(){
             expect(route.current.controller).toBe('ListCtrl');
         });
 
-        it('should have rout parameters. ', function(){
+        it('should have rout User ID parameter. ', function(){
             var routeParams = route.current.params
             expect(routeParams.userID).toEqual('1');
         });

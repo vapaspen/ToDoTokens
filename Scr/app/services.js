@@ -7,8 +7,17 @@ UserDataServices.factory('FetchUsers', ['DBURL','$firebaseArray', function(DBURL
     var userRef = DBURL+'users';
     var fireRef = new Firebase(userRef);
 
-    return function (){
+    return function(){
         return $firebaseArray(fireRef);
+    }
+}]);
+
+UserDataServices.factory('FetchAUser', ['DBURL','$firebaseObject', function(DBURL, $firebaseObject){
+    return function(ID){
+            var userRef = DBURL+'users' + ID;
+            var fireRef = new Firebase(userRef);
+            return $firebaseObject(fireRef);
+
     }
 }]);
 

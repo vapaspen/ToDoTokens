@@ -6,7 +6,8 @@ app.controller('HomeCtrl', ['$scope', 'FetchUsers',    function($scope,FetchUser
 }]);
 
 //Controller for List Page. Used to manage User List page Display
-app.controller('ListCtrl', ['$scope', function($scope){
+app.controller('ListCtrl', ['$scope','$routeParams', function($scope, $routeParams){
+    $scope.params = $routeParams;
     $scope.title = "Users's List";
     $scope.firstName = 'Users';
 }]);
