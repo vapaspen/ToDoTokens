@@ -1,7 +1,7 @@
 'use strict';
 
 var UserDataServices = angular.module('UserDataServices',['firebase'])
-.value('DBURL','https://todotokens.firebaseio.com/')
+.constant('DBURL','https://todotokens.firebaseio.com/')
 
 UserDataServices.factory('FetchUsers', ['DBURL','$firebaseArray', function(DBURL, $firebaseArray){
     var userRef = DBURL+'users';
@@ -12,11 +12,13 @@ UserDataServices.factory('FetchUsers', ['DBURL','$firebaseArray', function(DBURL
     }
 }]);
 
-UserDataServices.factory('FetchAUser', ['DBURL','$firebaseObject', function(DBURL, $firebaseObject){
+
+UserDataServices.factory('FetchAUser', ['DBURL', '$firebaseObject', function(DBURL, $firebaseObject){
     return function(ID){
-            var userRef = DBURL+'users' + ID;
-            var fireRef = new Firebase(userRef);
-            return $firebaseObject(fireRef);
+        var userRef = DBURL+'users';
+        var fireRef = new Firebase(userRef);
+        var found = fireRef.orderByChild("ID").equalTo(ID).limitToFirst(1);
+        return $firebaseObject(found);
 
     }
 }]);

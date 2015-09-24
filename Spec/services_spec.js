@@ -1,35 +1,38 @@
-'use strict';
+
+
 describe('UserDataServices checks: ', function(){
-    var FetchAUser, mockfirebaseObject, firebaseObjectSpy
-
-
+'use strict';
+    var FetchAUser
     beforeEach(function(){
         module('UserDataServices');
 
         module(function($provide){
             $provide.service("$firebaseObject", function(){
-                return function(){return {"Keys":"Values"}};
+                 var fbObject = function(stuff){
+                    return {"Keys":"Values"}
+
+                 };
+                return fbObject;
             });
         });
 
-        mockfirebaseObject = $firebaseObject;
     });
 
     describe('FetchUser Tests: ', function(){
 
-        beforeEach(inject(function(_FetchAUser_, _FetchUsers_, $firebaseObject){
+        beforeEach(inject(function(_FetchAUser_, _FetchUsers_){
                 FetchAUser =  _FetchAUser_;
 
             }));
+
 
         it('should exist and be a function.', function(){
             expect(typeof FetchAUser).toEqual('function')
         });
 
-        it('should call Firebase object.', function(){
-            var stuff = FetchAUser(1);
-
-
+        it('should call $firebaseObject.', function(){
+            var results = FetchAUser(1)
+            expect(results).toEqual({"Keys":"Values"})
         });
     });
 });

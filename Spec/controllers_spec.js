@@ -1,5 +1,5 @@
  'use strict';
-
+/*
  describe('Controller Tests:', function(){
     beforeEach(module('app'));
     var $controller, $rootScope;
@@ -9,15 +9,15 @@
         $rootScope = _$rootScope_;
     }));
 
-    /*
+
     describe('Home Controller tests:', function(){
         var $scope = {};
         beforeEach(inject(function($controller){
             $controller('HomeCtrl', {'$scope' : $scope});
         }));
-    */
+
 
 
 
     });
-});
+});*/
