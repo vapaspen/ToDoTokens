@@ -1,8 +1,11 @@
 'use strict';
 
 //Controller for Default Page. Used to manage User selection Display
-app.controller('HomeCtrl', ['$scope', 'FetchUsers',    function($scope,FetchUsers){
-    $scope.userList = FetchUsers()
+app.controller('HomeCtrl', ['$scope', 'FetchUsers','IsListCurrent',    function($scope,FetchUsers, IsListCurrent){
+    $scope.userList = FetchUsers();
+    $scope.test = {}
+
+    IsListCurrent("z1", "n934tbg1d", $scope.test);
 }]);
 
 //Controller for List Page. Used to manage User List page Display
