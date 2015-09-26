@@ -20,33 +20,43 @@ UserDataServices.factory('FetchAUser', ['DBURL', '$firebaseObject', function(DBU
     };
 }]);
 
-//check if their is current List displaying, if there is a List in the Current List DataBase, and if all are up to date
-//Stats:
-//0 Displayed List need update, Current List - out of Date
-//1 Displayed List need update, Current List - Current
-//2 Displayed List OK, Current List - Current
-//3 Displayed List OK, Current List - out of Date <--- we bypas this case
-UserDataServices.factory('IsListCurrent', ['DBURL','$window', function(DBURL, $window){
-    return function(userID, listID, Obj){
+//function to Check if Current List in Data base is current. This updates
+UserDataServices.factory('IsListCurrent', ['DBURL', function(DBURL){
+    return function(userID, listStatusAndStorage){
         var listURL = DBURL+'lists/'+userID+'/current';
 
-        var listRef = new $window.Firebase(listURL);
+        var listRef = new Firebase(listURL);
 
-        listRef.on('value', function(snap){
-            var results = snap.val()
+        //make a Reference so we can detach it later
+        listStatusAndStorage.IsListCurrent = listRef.on('value', function(snap){
+            listStatusAndStorage.db.current = snap.val()
 
-            if(results !== undefined && results !== null){
-                var timeDif =  new Date().getTime()- results.createdOn;
-                if(listID == results.ID && timeDif < 86400000){
-                    Obj.result = true
+            if(snap.val() !== undefined && snap.val() !== null){
+                var timeDif =  new Date().getTime()- snap.val().createdOn;
+                if(timeDif < 86400000){
+                    listStatusAndStorage.db.isUpToDate = true;
+                }
+                else{
+                    listStatusAndStorage.db.isUpToDate = false;
                 }
             }
+            else{
+                listStatusAndStorage.db.isUpToDate = false;
+            }
         });
-
-
     };
 }]);
 
+
+UserDataServices.factory('ListUpdateRouter', [function(){
+    return function(updatedListStatus){
+            //alert(updatedListStatus.db.isUpToDate)
+        }
+}])
+
+
+
+//Local Function used to send updates to the DB as its being Made.
 UserDataServices.factory('ManualDbUpdate', ['DBURL', function(DBURL){
     return function(){
         var now = new Date().getTime();
