@@ -1,32 +1,36 @@
 
+test = function () {
 
-describe('UserDataServices checks: ', function(){
+}
+
+
+describe('UserDataServices checks: ', function () {
 'use strict';
-    var refSpy, FirebaseReal
-    var mockdata = {}
+    var refSpy, FirebaseReal, mockdata, mockfirebaseArrayData, mockfirebaseObjectData
+
     var mockSnap = {
-        val:function(){
+        val:function () {
             return mockdata;
         }
     }
     var DBref = {
-        on:function(str, callback){
+        on:function (str, callback) {
             DBref.onisCalled = true;
             DBref.onisCalledWith = arguments;
             callback(mockSnap);
         },
-        orderByChild:function(args){
+        orderByChild:function (args) {
             DBref.orderByChildisCalled = true;
             DBref.orderByChildisCalledWith = args;
 
             return DBref;
         },
-        equalTo:function(args){
+        equalTo:function (args) {
             DBref.equalToisCalled = true;
             DBref.equalToisCalledWith = args;
             return DBref;
         },
-        limitToFirst:function(args){
+        limitToFirst:function (args) {
             DBref.limitToFirstisCalled = true;
             DBref.limitToFirstisCalledWith = args;
             return DBref;
@@ -34,7 +38,7 @@ describe('UserDataServices checks: ', function(){
 
     };
 
-    var mockFirebase = function(url){
+    var mockFirebase = function (url) {
         var refObj = DBref;
         refObj.FirebaseisCalled = true;
         refObj.FirebaseisCalledWith = url;
@@ -42,26 +46,31 @@ describe('UserDataServices checks: ', function(){
         return refObj;
     };
 
-    beforeEach(function(){
+    beforeEach(function () {
         module('UserDataServices');
         module(function($provide){
-                $provide.service("$firebaseArray", function(){
-                     var fbObject = function(stuff){
-                        return [{"Keys":"Values"}, {"Keys":"Values"}]
+                $provide.service("$firebaseArray", function () {
+                     var fbObject = function (refObj) {
+                        refObj.firebaseArrayisCalled = true;
+                        mockfirebaseArrayData.args = refObj;
+                        return mockfirebaseArrayData;
                      };
                     return fbObject;
                 });
             });
+        mockfirebaseArrayData = [];
 
         module(function($provide){
-                $provide.service("$firebaseObject", function(){
-                     var fbObject = function(stuff){
-                        return {"Keys":"Values"}
+            $provide.service("$firebaseObject", function () {
+                 var fbObject = function (refObj) {
+                    refObj.firebaseObjectisCalled = true;
+                    mockfirebaseObjectData.args = refObj
+                    return mockfirebaseObjectData;
 
-                     };
-                    return fbObject;
-                });
+                 };
+                return fbObject;
             });
+        });
     })
 
 
@@ -71,6 +80,11 @@ describe('UserDataServices checks: ', function(){
     }));
     afterEach(inject(function(){
         Firebase = FirebaseReal;
+
+        //Clear Data after every use.
+        mockdata = {};
+        mockfirebaseArrayData = [];
+        mockfirebaseObjectData = {};
     }));
 
     describe('FetchUsers: ', function(){
@@ -81,14 +95,15 @@ describe('UserDataServices checks: ', function(){
         }));
 
 
-        it('should exist and be a function.', function(){
+        it('should exist and be a function.', function () {
             expect(typeof FetchUsers).toEqual('function');
         });
 
-        it('should call Firebase".', function(){
-
+        it('should call Firebase and $firebaseArray.', function () {
+            mockfirebaseArrayData = [{"key":'value'}, {"key":'value'}];
             var results = FetchUsers();
             expect(refSpy.FirebaseisCalled).toBeTruthy();
+            expect(results.args.firebaseArrayisCalled).toEqual(true);
         });
     });
 
@@ -136,14 +151,14 @@ describe('UserDataServices checks: ', function(){
             expect(refSpy.FirebaseisCalledWith).toEqual('https://todotokens.firebaseio.com/lists/z1/current');
         });
 
-        it('should set db.isUpToDate to false if Current is Null or undefined.', function(){
-            mockdata = null;
+        it('should set db.isUpToDate to false if Current is Null or undefined.', function () {
+            mockdata = undefined;
             IsListCurrent("z1", mocklistStatusAndStorage);
             expect(mocklistStatusAndStorage.db.isUpToDate).toEqual(false);
 
         });
 
-        it('should set db.isUpToDate to false if createdOn is more the 24 hours old', function(){
+        it('should set db.isUpToDate to false if createdOn is more the 24 hours old', function () {
             var mockTime = new Date().getTime() - 86400009;
 
             mockdata = {
