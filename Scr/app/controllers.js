@@ -1,7 +1,7 @@
 'use strict';
 
 //Controller for Default Page. Used to manage User selection Display
-app.controller('HomeCtrl', ['ManualDbUpdate', '$scope', 'FetchUsers','IsListCurrent','ListUpdateRouter', 'FetchNewCurrent',    function(ManualDbUpdate, $scope,FetchUsers, IsListCurrent, ListUpdateRouter, FetchNewCurrent){
+app.controller('HomeCtrl', ['ManualDbUpdate', '$scope', 'FetchUsers','IsListCurrent','ListUpdateRouter', 'FetchCurrentListTemplates',    function(ManualDbUpdate, $scope,FetchUsers, IsListCurrent, ListUpdateRouter, FetchCurrentListTemplates){
     $scope.userList = FetchUsers();
     $scope.listStatusAndStorage = {
         'db':{
@@ -12,9 +12,9 @@ app.controller('HomeCtrl', ['ManualDbUpdate', '$scope', 'FetchUsers','IsListCurr
 
     $scope.$watchCollection('listStatusAndStorage', ListUpdateRouter)
 
-    //IsListCurrent("z1", $scope.listStatusAndStorage);
+    IsListCurrent("z1", $scope.listStatusAndStorage);
     //ManualDbUpdate("z1");
-    FetchNewCurrent("z1", $scope.listStatusAndStorage);
+    FetchCurrentListTemplates("z1", $scope.listStatusAndStorage);
 }]);
 
 //Controller for List Page. Used to manage User List page Display

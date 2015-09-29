@@ -19,6 +19,11 @@ describe('UserDataServices checks: ', function () {
             DBref.onisCalledWith = arguments;
             callback(mockSnap);
         },
+        once:function (str, callback) {
+            DBref.onceisCalled = true;
+            DBref.onceisCalledWith = arguments;
+            callback(mockSnap);
+        },
         orderByChild:function (args) {
             DBref.orderByChildisCalled = true;
             DBref.orderByChildisCalledWith = args;
@@ -168,6 +173,128 @@ describe('UserDataServices checks: ', function () {
             IsListCurrent("z1", mocklistStatusAndStorage);
             expect(mocklistStatusAndStorage.db.isUpToDate).toEqual(false);
         });
+    });
+
+    describe('FetchCurrentListTemplates: ', function () {
+        var FetchCurrentListTemplates, mocklistStatusAndStorage, mockNow, mockMins, mockHours;
+
+        beforeEach(function () {
+            mockNow = new Date();
+            mockHours = mockNow.getHours();
+            mockMins = Math.floor(mockNow.getMinutes() / 10) * 10;
+
+        });
+
+        beforeEach(inject(function(_FetchCurrentListTemplates_){
+            FetchCurrentListTemplates =  _FetchCurrentListTemplates_;
+            mocklistStatusAndStorage = {};
+        }));
+
+        it('should exist and be a function.', function () {
+            expect(typeof FetchCurrentListTemplates).toEqual('function');
+        });
+
+        it('should call Firebase with URL including userID', function () {
+            FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
+
+            expect(refSpy.FirebaseisCalledWith).toEqual('https://todotokens.firebaseio.com/lists/z1/listtemplats');
+        });
+
+        it('should return an error when there not active Lists for a user.', function () {
+            mockdata = null;
+
+            FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
+            expect(mocklistStatusAndStorage.listTemplats.error.message).toEqual('No Active List Templates found for user: z1');
+        });
+
+        it('should return an empty array with no error if an Active List is found but no list meet the other criteria.', function(){
+            mockdata = {
+                "n934tbg1d":{
+                    startHour:25,
+                    startMin:70,
+                    daysOfTheWeek:{
+                            w0:false,
+                            w1:false,
+                            w3:false,
+                            w4:false,
+                            w5:false,
+                            w6:false,
+                            w7:false
+                    },
+                }
+            }
+
+            FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
+            expect(mocklistStatusAndStorage.listTemplats.length).toEqual(0);
+            expect(mocklistStatusAndStorage.listTemplats.error).toEqual({});
+        });
+
+        it('should return empty array with no error if Active List and list for the week is found but no list meet the other criteria.', function(){
+            mockdata = {
+                "n934tbg1d":{
+                    startHour:25,
+                    startMin:70,
+                    daysOfTheWeek:{
+                            w0:true,
+                            w1:true,
+                            w3:true,
+                            w4:true,
+                            w5:true,
+                            w6:true,
+                            w7:true
+                    },
+                }
+            }
+
+            FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
+            expect(mocklistStatusAndStorage.listTemplats.length).toEqual(0);
+            expect(mocklistStatusAndStorage.listTemplats.error).toEqual({});
+        });
+
+        it('should return empty array with no error if Active List, list for the week, and Hour is found but no list meet the other criteria.', function(){
+            mockdata = {
+                "n934tbg1d":{
+                    startHour:mockHours,
+                    startMin:70,
+                    daysOfTheWeek:{
+                            w0:true,
+                            w1:true,
+                            w3:true,
+                            w4:true,
+                            w5:true,
+                            w6:true,
+                            w7:true
+                    },
+                }
+            }
+
+            FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
+            expect(mocklistStatusAndStorage.listTemplats.length).toEqual(0);
+            expect(mocklistStatusAndStorage.listTemplats.error).toEqual({});
+        });
+
+        it('should add the a list to the array with an ID and no error if a list meets all criteria.', function(){
+            mockdata = {
+                "n934tbg1d":{
+                    startHour:mockHours,
+                    startMin:mockMins,
+                    daysOfTheWeek:{
+                            w0:true,
+                            w1:true,
+                            w3:true,
+                            w4:true,
+                            w5:true,
+                            w6:true,
+                            w7:true
+                    },
+                }
+            }
+
+            FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
+            expect(mocklistStatusAndStorage.listTemplats[0].ID).toEqual("n934tbg1d");
+            expect(mocklistStatusAndStorage.listTemplats.error).toEqual({});
+        });
+
     });
 
 });

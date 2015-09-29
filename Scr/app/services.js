@@ -47,41 +47,52 @@ UserDataServices.factory('IsListCurrent', ['DBURL', function (DBURL) {
 }]);
 
 
-UserDataServices.factory('FetchNewCurrent', ['DBURL', function (DBURL) {
-    return function (userID, listStatusAndStorage){
-        var listTemplatsURL, listTemplatsByDate, listTemplatsDefault, now;
+UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', function (DBURL) {
+    return function (userID, listStatusAndStorage) {
+        var listTemplatsURL, listTemplatsRef, now, today, error;
 
         now = new Date();
+        today = 'w' + now.getDay();
 
-        listStatusAndStorage.listTemplatsByDate = []
+        listStatusAndStorage.listTemplats = [];
+        listStatusAndStorage.listTemplats.error = {};
 
-        listTemplatsURL = DBURL + '/lists/' + userID + '/listtemplats';
+        listTemplatsURL = DBURL + 'lists/' + userID + '/listtemplats';
 
-        listTemplatsByDate = new Firebase(listTemplatsURL + "/dated");
-        listTemplatsDefault = new Firebase(listTemplatsURL + "/defaults");
+        listTemplatsRef = new Firebase(listTemplatsURL);
 
-        listTemplatsByDate.once('value', function (snap) {
-            for (var i = 0; i < snap.val().length; i++) {
-                var currentSnap = snap.val()[i];
-                //add the Ifs for Hours and Minuets
-                if (currentSnap.startTime.day == now.getDate()) {
-                    if (currentSnap.startTime.month == now.getMonth()) {
-                        if (currentSnap.startTime.year == now.getFullYear()) {
+        listTemplatsRef.orderByChild('isActive').equalTo(true).once('value', function (snap) {
+            var key, iterator, floorMin, foundList;
 
-                            listStatusAndStorage.listTemplatsByDate.push(currentSnap)
+            //if nothing was active return error
+            if (!snap.val()) {
+                listStatusAndStorage.listTemplats.error.message = 'No Active List Templates found for user: ' + userID;
+            } else {
+
+                floorMin = Math.floor(now.getMinutes() / 10) * 10;
+
+                for (key in snap.val()) {
+                    iterator = snap.val()[key];
+                    if (iterator.daysOfTheWeek[today]) {
+                        if (iterator.startHour === now.getHours()) {
+                            if (floorMin === iterator.startMin) {
+                                foundList = iterator;
+                                foundList.ID = key;
+                                listStatusAndStorage.listTemplats.push(foundList);
+                            }
                         }
                     }
                 }
             }
         });
-
-
     };
 }]);
 
 UserDataServices.factory('ListUpdateRouter', [function () {
-    return function (updatedListStatus) {
-            //alert(updatedListStatus.db.isUpToDate)
+    return function (listStatusAndStorage) {
+        if (listStatusAndStorage.db.isUpToDate) {
+
+        }
     };
 }]);
 
@@ -108,52 +119,91 @@ UserDataServices.factory('ManualDbUpdate', ['DBURL', function (DBURL) {
         listRef.set({
                 current:{
                     ID:"n934tbg1d",
+                    createdOn: 1443123299604,
+                    isActive:true,
+                    daysOfTheWeek:{
+                        w0:false,
+                        w1:true,
+                        w3:true,
+                        w4:true,
+                        w5:true,
+                        w6:true,
+                        w7:false
+                    },
+                    startHour:13,
+                    startMin:40
+                },
+                listtemplats:{
+                    "n934tbg1d":{
                         createdOn: 1443123299604,
-                        isDefault: true,
+                        isActive:true,
                         daysOfTheWeek:{
-                            monday: true,
-                            tuesday:true
+                            w0:false,
+                            w1:true,
+                            w3:true,
+                            w4:true,
+                            w5:true,
+                            w6:true,
+                            w7:false
                         },
                         startHour:4,
                         startMin:10
-                },
-                listtemplats:{
-                    dated:[{
-                        ID:"h6dls0gk54",
-                            createdOn: now,
-                            startTime: {
-                                min: atime.getMinutes(),
-                                hours: atime.getHours(),
-                                day: atime.getDate(),
-                                month: atime.getMonth(),
-                                year: atime.getFullYear()
-                            }
+                    },
+
+                    "dibaco39g02":{
+                        createdOn: now,
+                        isActive:true,
+                        daysOfTheWeek:{
+                            w0:false,
+                            w1:true,
+                            w3:true,
+                            w4:true,
+                            w5:true,
+                            w6:true,
+                            w7:false
                         },
-                        {
-                        ID:"kf9ame46m7",
-                            createdOn: now,
-                            startTime: {
-                                min: pastTime.getMinutes(),
-                                hours: pastTime.getHours(),
-                                day: pastTime.getDate(),
-                                month: pastTime.getMonth(),
-                                year: pastTime.getFullYear()
-                            }
-                        }],
-                    defaults:{
-                        n934tbg1d:{
-                            ID:"n934tbg1d",
-                            createdOn: 1443123299604,
-                            isDefault: true,
-                            daysOfTheWeek:{
-                                monday: true,
-                                tuesday:true
-                            },
-                            startHour:4,
-                            startMin:10
-                        }
+                        startHour:4,
+                        startMin:10
                     }
                 }
         });
     }
 }]);
+
+
+
+/*
+
+    "n934tbg1d":{
+                    createdOn: 1443123299604,
+                    isActive:true,
+                    daysOfTheWeek:{
+                        0:false,
+                        1:true,
+                        3:true,
+                        4:true,
+                        5:true,
+                        6:true,
+                        7:false
+                    },
+                    startHour:4,
+                    startMin:10
+                },
+
+    "dibaco39g02":{
+                    createdOn: now,
+                    isActive:false,
+                    daysOfTheWeek:{
+                        0:false,
+                        1:true,
+                        3:true,
+                        4:true,
+                        5:true,
+                        6:true,
+                        7:false
+                    },
+                    startHour:4,
+                    startMin:10
+                }
+
+*/
