@@ -73,14 +73,21 @@ UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', function (DBURL)
 
                 for (key in snap.val()) {
                     iterator = snap.val()[key];
-                    if (iterator.daysOfTheWeek[today]) {
+                    if (iterator.daysOfTheWeek[today] === true) {
                         if (iterator.startHour === now.getHours()) {
                             if (floorMin === iterator.startMin) {
                                 foundList = iterator;
                                 foundList.ID = key;
                                 listStatusAndStorage.listTemplats.push(foundList);
+                            } else {
+                                listStatusAndStorage.listTemplats.message = 'Failed at Minuets.';
                             }
+
+                        } else {
+                            listStatusAndStorage.listTemplats.message = 'Failed at Hours.';
                         }
+                    } else {
+                       listStatusAndStorage.listTemplats.message = 'Failed at DayOftheWeek.';
                     }
                 }
             }

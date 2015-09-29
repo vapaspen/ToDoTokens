@@ -226,7 +226,7 @@ describe('UserDataServices checks: ', function () {
 
             FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
             expect(mocklistStatusAndStorage.listTemplats.length).toEqual(0);
-            expect(mocklistStatusAndStorage.listTemplats.error).toEqual({});
+            expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Failed at DayOftheWeek.');
         });
 
         it('should return empty array with no error if Active List and list for the week is found but no list meet the other criteria.', function(){
@@ -248,7 +248,7 @@ describe('UserDataServices checks: ', function () {
 
             FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
             expect(mocklistStatusAndStorage.listTemplats.length).toEqual(0);
-            expect(mocklistStatusAndStorage.listTemplats.error).toEqual({});
+            expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Failed at Hours.');
         });
 
         it('should return empty array with no error if Active List, list for the week, and Hour is found but no list meet the other criteria.', function(){
@@ -270,7 +270,7 @@ describe('UserDataServices checks: ', function () {
 
             FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
             expect(mocklistStatusAndStorage.listTemplats.length).toEqual(0);
-            expect(mocklistStatusAndStorage.listTemplats.error).toEqual({});
+            expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Failed at Minuets');
         });
 
         it('should add the a list to the array with an ID and no error if a list meets all criteria.', function(){
@@ -291,8 +291,9 @@ describe('UserDataServices checks: ', function () {
             }
 
             FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
-            expect(mocklistStatusAndStorage.listTemplats[0].ID).toEqual("n934tbg1d");
+            //expect(mocklistStatusAndStorage.listTemplats[0].ID).toEqual("n934tbg1d");
             expect(mocklistStatusAndStorage.listTemplats.error).toEqual({});
+            expect(mocklistStatusAndStorage.listTemplats.message).
         });
 
     });
