@@ -215,11 +215,11 @@ describe('UserDataServices checks: ', function () {
                     daysOfTheWeek:{
                             w0:false,
                             w1:false,
+                            w2:false,
                             w3:false,
                             w4:false,
                             w5:false,
-                            w6:false,
-                            w7:false
+                            w6:false
                     },
                 }
             }
@@ -237,11 +237,11 @@ describe('UserDataServices checks: ', function () {
                     daysOfTheWeek:{
                             w0:true,
                             w1:true,
+                            w2:true,
                             w3:true,
                             w4:true,
                             w5:true,
                             w6:true,
-                            w7:true
                     },
                 }
             }
@@ -259,18 +259,18 @@ describe('UserDataServices checks: ', function () {
                     daysOfTheWeek:{
                             w0:true,
                             w1:true,
+                            w2:true,
                             w3:true,
                             w4:true,
                             w5:true,
                             w6:true,
-                            w7:true
                     },
                 }
             }
 
             FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
             expect(mocklistStatusAndStorage.listTemplats.length).toEqual(0);
-            expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Failed at Minuets');
+            expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Failed at Minuets.');
         });
 
         it('should add the a list to the array with an ID and no error if a list meets all criteria.', function(){
@@ -281,21 +281,145 @@ describe('UserDataServices checks: ', function () {
                     daysOfTheWeek:{
                             w0:true,
                             w1:true,
+                            w2:true,
                             w3:true,
                             w4:true,
                             w5:true,
-                            w6:true,
-                            w7:true
+                            w6:true
                     },
                 }
             }
 
             FetchCurrentListTemplates('z1', mocklistStatusAndStorage);
-            //expect(mocklistStatusAndStorage.listTemplats[0].ID).toEqual("n934tbg1d");
+            expect(mocklistStatusAndStorage.listTemplats[0].ID).toEqual("n934tbg1d");
             expect(mocklistStatusAndStorage.listTemplats.error).toEqual({});
-            expect(mocklistStatusAndStorage.listTemplats.message).
+            expect(mocklistStatusAndStorage.listTemplats.message).toEqual(undefined);
         });
 
+    });
+
+    describe('ListUpdateRouter: ', function(){
+        var ListUpdateRouter, mocklistStatusAndStorage;
+
+        beforeEach(inject(function(_ListUpdateRouter_){
+            ListUpdateRouter = _ListUpdateRouter_;
+
+        }));
+
+        beforeEach(function (){
+            mocklistStatusAndStorage = {
+                "db":{}
+            };
+        });
+
+        it('should exist and be a function.', function () {
+            expect(typeof ListUpdateRouter).toEqual('function');
+        });
+
+        it('should end with a success message if the DB Current has been found current in all ways.', function(){
+            var mockcurrentList, mocklistTemplats, status;
+
+            mockcurrentList = {
+                "ID": "n934tbg1d"
+            };
+
+            mocklistTemplats = [
+                {"ID":"ofirysb945n2w"},
+                {"ID":"n934tbg1d"}
+            ];
+
+            mocklistStatusAndStorage.db.current = mockcurrentList;
+            mocklistStatusAndStorage.db.isUpToDate = true;
+            mocklistStatusAndStorage.listTemplats = mocklistTemplats;
+
+
+            status = ListUpdateRouter(mocklistStatusAndStorage);
+
+            expect(status).toEqual('Database list is current');
+
+        });
+
+        it('Should call updateCurrentList if listTemplats.length is greater then 0 on  isUpToDate true and false if no ID match was found.', function(){
+            var mockcurrentList, mocklistTemplats, status;
+
+            mockcurrentList = {
+                "ID": "n934tbg1d"
+            };
+
+            mocklistTemplats = [
+                {"ID":"n87da3fo76"}
+            ];
+
+            mocklistStatusAndStorage.db.current = mockcurrentList;
+            mocklistStatusAndStorage.listTemplats = mocklistTemplats;
+
+            mocklistStatusAndStorage.db.isUpToDate = true;
+            status = ListUpdateRouter(mocklistStatusAndStorage);
+
+            expect(status).toEqual('updateCurrentList >> isUpToDate:true');
+
+            mocklistStatusAndStorage.db.isUpToDate = false;
+            status = ListUpdateRouter(mocklistStatusAndStorage);
+
+            expect(status).toEqual('updateCurrentList >> isUpToDate:false');
+        });
+
+        it('Should call FindNewCurrentListFromRecent if listTemplats is empty on isUpToDate true and false.', function(){
+            var mockcurrentList, mocklistTemplats, status;
+
+            mockcurrentList = {
+                "ID": "n934tbg1d"
+            };
+
+            mocklistTemplats = [];
+
+            mocklistStatusAndStorage.db.current = mockcurrentList;
+            mocklistStatusAndStorage.listTemplats = mocklistTemplats;
+
+            mocklistStatusAndStorage.db.isUpToDate = true;
+            status = ListUpdateRouter(mocklistStatusAndStorage);
+
+            expect(status).toEqual('FindNewCurrentListFromRecent >> isUpToDate:true');
+
+            mocklistStatusAndStorage.db.isUpToDate = false;
+            status = ListUpdateRouter(mocklistStatusAndStorage);
+
+            expect(status).toEqual('FindNewCurrentListFromRecent >> isUpToDate:false');
+        });
+
+        it('should call updateCurrentList if db.current is empty and mocklistTemplats is not', function(){
+            var mockcurrentList, mocklistTemplats, status;
+
+            mockcurrentList = {};
+
+            mocklistTemplats = [
+                {"ID": "n934tbg1d"}
+            ];
+
+            mocklistStatusAndStorage.db.current = mockcurrentList;
+            mocklistStatusAndStorage.listTemplats = mocklistTemplats;
+
+            mocklistStatusAndStorage.db.isUpToDate = true;
+            status = ListUpdateRouter(mocklistStatusAndStorage);
+
+            expect(status).toEqual('updateCurrentList >> isUpToDate:true');
+        });
+
+        it('should call FindNewCurrentListFromRecent if db.current and listTemplats are empty.', function(){
+            var mockcurrentList, mocklistTemplats, status;
+
+            mockcurrentList = {};
+
+            mocklistTemplats = [];
+
+            mocklistStatusAndStorage.db.current = mockcurrentList;
+            mocklistStatusAndStorage.listTemplats = mocklistTemplats;
+
+            mocklistStatusAndStorage.db.isUpToDate = true;
+            status = ListUpdateRouter(mocklistStatusAndStorage);
+
+            expect(status).toEqual('FindNewCurrentListFromRecent >> isUpToDate:true');
+        });
     });
 
 });

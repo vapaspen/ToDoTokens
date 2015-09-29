@@ -53,9 +53,7 @@ UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', function (DBURL)
 
         now = new Date();
         today = 'w' + now.getDay();
-
-        listStatusAndStorage.listTemplats = [];
-        listStatusAndStorage.listTemplats.error = {};
+        listStatusAndStorage.listTemplats = undefined;
 
         listTemplatsURL = DBURL + 'lists/' + userID + '/listtemplats';
 
@@ -63,7 +61,8 @@ UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', function (DBURL)
 
         listTemplatsRef.orderByChild('isActive').equalTo(true).once('value', function (snap) {
             var key, iterator, floorMin, foundList;
-
+            listStatusAndStorage.listTemplats = [];
+            listStatusAndStorage.listTemplats.error = {};
             //if nothing was active return error
             if (!snap.val()) {
                 listStatusAndStorage.listTemplats.error.message = 'No Active List Templates found for user: ' + userID;
@@ -95,11 +94,32 @@ UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', function (DBURL)
     };
 }]);
 
+//takes a listStatusAndStorage Object. Assumes the listTemplats is undefined until it is done Processing
 UserDataServices.factory('ListUpdateRouter', [function () {
     return function (listStatusAndStorage) {
-        if (listStatusAndStorage.db.isUpToDate) {
+        if (listStatusAndStorage.listTemplats !== undefined) {
+            if (listStatusAndStorage.db.current !== null && listStatusAndStorage.db.current !== undefined && listStatusAndStorage.db.current !== {}) {
+                if (listStatusAndStorage.db.isUpToDate === true) {
+                    for (var i = 0; i < listStatusAndStorage.listTemplats.length; i++) {
+                        if (listStatusAndStorage.listTemplats[i].ID == listStatusAndStorage.db.current.ID) {
+                            return 'Database list is current';
+                        }
+                    }
+                }
+
+            }
+
+            if (listStatusAndStorage.listTemplats.length > 0) {
+                //updateCurrentList(listStatusAndStorage.listTemplats[0]);
+                return 'updateCurrentList >> isUpToDate:' + listStatusAndStorage.db.isUpToDate;
+            }
+
+            //FindNewCurrentListFromRecent(listStatusAndStorage);
+            return 'FindNewCurrentListFromRecent >> isUpToDate:' + listStatusAndStorage.db.isUpToDate;
+
 
         }
+        return 'listTemplats undefined'
     };
 }]);
 
@@ -131,11 +151,11 @@ UserDataServices.factory('ManualDbUpdate', ['DBURL', function (DBURL) {
                     daysOfTheWeek:{
                         w0:false,
                         w1:true,
+                        w2:true,
                         w3:true,
                         w4:true,
                         w5:true,
-                        w6:true,
-                        w7:false
+                        w6:false
                     },
                     startHour:13,
                     startMin:40
@@ -147,11 +167,11 @@ UserDataServices.factory('ManualDbUpdate', ['DBURL', function (DBURL) {
                         daysOfTheWeek:{
                             w0:false,
                             w1:true,
+                            w2:true,
                             w3:true,
                             w4:true,
                             w5:true,
-                            w6:true,
-                            w7:false
+                            w6:false
                         },
                         startHour:4,
                         startMin:10
@@ -163,11 +183,11 @@ UserDataServices.factory('ManualDbUpdate', ['DBURL', function (DBURL) {
                         daysOfTheWeek:{
                             w0:false,
                             w1:true,
+                            w2:true,
                             w3:true,
                             w4:true,
                             w5:true,
-                            w6:true,
-                            w7:false
+                            w6:false
                         },
                         startHour:4,
                         startMin:10
