@@ -22,7 +22,7 @@ UserDataServices.factory('FetchAUser', ['DBURL', '$firebaseObject', function (DB
 }]);
 
 //function to Check if Current List in Data base is current.
-UserDataServices.factory('IsListCurrent', ['DBURL', function (DBURL) {
+UserDataServices.factory('IsListCurrent', ['DBURL', 'ListUpdateRouter', function (DBURL, ListUpdateRouter) {
     return function (userID, listStatusAndStorage) {
         var listURL = DBURL + 'lists/' + userID + '/current';
 
@@ -42,12 +42,14 @@ UserDataServices.factory('IsListCurrent', ['DBURL', function (DBURL) {
             } else {
                 listStatusAndStorage.db.isUpToDate = false;
             }
+
+            ListUpdateRouter(listStatusAndStorage);
         });
     };
 }]);
 
 
-UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', function (DBURL) {
+UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', 'ListUpdateRouter', function (DBURL, ListUpdateRouter) {
     return function (userID, listStatusAndStorage) {
         var listTemplatsURL, listTemplatsRef, now, today, error;
 
@@ -89,17 +91,24 @@ UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', function (DBURL)
                        listStatusAndStorage.listTemplats.message = 'Failed at DayOftheWeek.';
                     }
                 }
+
+                ListUpdateRouter(listStatusAndStorage);
             }
         });
     };
 }]);
 
 //takes a listStatusAndStorage Object. Assumes the listTemplats is undefined until it is done Processing
-UserDataServices.factory('ListUpdateRouter', [function () {
+UserDataServices.factory('ListUpdateRouter', ['updateCurrentList', 'FindNewCurrentListFromRecent', function (updateCurrentList, FindNewCurrentListFromRecent) {
     return function (listStatusAndStorage) {
-        if (listStatusAndStorage.listTemplats !== undefined) {
-            if (listStatusAndStorage.db.current !== null && listStatusAndStorage.db.current !== undefined && listStatusAndStorage.db.current !== {}) {
+        var statusTest;
+        statusTest = 'Start \n\n';
+        if (listStatusAndStorage.listTemplats != undefined) {
+            statusTest += listStatusAndStorage.listTemplats + '\n\n';
+            if (listStatusAndStorage.db.current !== null && listStatusAndStorage.db.current !== {}) {
+            statusTest += listStatusAndStorage.db.current + '\n\n';
                 if (listStatusAndStorage.db.isUpToDate === true) {
+                    statusTest += listStatusAndStorage.db.isUpToDate + '\n\n';
                     for (var i = 0; i < listStatusAndStorage.listTemplats.length; i++) {
                         if (listStatusAndStorage.listTemplats[i].ID == listStatusAndStorage.db.current.ID) {
                             return 'Database list is current';
@@ -108,13 +117,13 @@ UserDataServices.factory('ListUpdateRouter', [function () {
                 }
 
             }
-
+                //alert(statusTest)
             if (listStatusAndStorage.listTemplats.length > 0) {
-                //updateCurrentList(listStatusAndStorage.listTemplats[0]);
+                updateCurrentList(listStatusAndStorage);
                 return 'updateCurrentList >> isUpToDate:' + listStatusAndStorage.db.isUpToDate;
             }
 
-            //FindNewCurrentListFromRecent(listStatusAndStorage);
+            FindNewCurrentListFromRecent(listStatusAndStorage);
             return 'FindNewCurrentListFromRecent >> isUpToDate:' + listStatusAndStorage.db.isUpToDate;
 
 
@@ -124,7 +133,21 @@ UserDataServices.factory('ListUpdateRouter', [function () {
 }]);
 
 
+UserDataServices.factory('updateCurrentList', ['DBURL', function (DBURL) {
+    return function (listStatusAndStorage) {
+        //stub to prove this was called
 
+        listStatusAndStorage.updateCurrentList = 'I was called';
+    };
+}]);
+
+UserDataServices.factory('FindNewCurrentListFromRecent', ['DBURL', function(DBURL){
+    return function (listStatusAndStorage) {
+        //stub to prove this was called
+
+        listStatusAndStorage.FindNewCurrentListFromRecent = 'I was called';
+    };
+}]);
 
 
 

@@ -2,15 +2,17 @@
 
 //Controller for Default Page. Used to manage User selection Display
 app.controller('HomeCtrl', ['ManualDbUpdate', '$scope', 'FetchUsers','IsListCurrent','ListUpdateRouter', 'FetchCurrentListTemplates',    function(ManualDbUpdate, $scope,FetchUsers, IsListCurrent, ListUpdateRouter, FetchCurrentListTemplates){
-    $scope.userList = FetchUsers();
-    $scope.listStatusAndStorage = {
+    var listdata = {
         'db':{
             "current":{},
             "isUpToDate":true
         }
     };
 
-    $scope.$watchCollection('listStatusAndStorage', ListUpdateRouter)
+    $scope.userList = FetchUsers();
+    $scope.listStatusAndStorage = listdata;
+
+    //$scope.$watchCollection('listStatusAndStorage', ListUpdateRouter)
 
     IsListCurrent("z1", $scope.listStatusAndStorage);
     //ManualDbUpdate("z1");
