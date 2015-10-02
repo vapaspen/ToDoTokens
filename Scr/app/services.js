@@ -21,15 +21,33 @@ UserDataServices.factory('FetchAUser', ['DBURL', '$firebaseObject', function (DB
     };
 }]);
 
+
+UserDataServices.factory('ListUpdateTrigger', ['IsListCurrent', 'FetchCurrentListTemplates', function (IsListCurrent, FetchCurrentListTemplates) {
+    return function (userID, listStatusAndStorage) {
+        listStatusAndStorage = {
+            'db':{
+                "current":{},
+                "isUpToDate":true
+            }
+        };
+
+        IsListCurrent(userID, listStatusAndStorage);
+        FetchCurrentListTemplates(userID, listStatusAndStorage);
+        return listStatusAndStorage
+    };
+}]);
+
 //function to Check if Current List in Data base is current.
 UserDataServices.factory('IsListCurrent', ['DBURL', 'ListUpdateRouter', function (DBURL, ListUpdateRouter) {
     return function (userID, listStatusAndStorage) {
         var listURL = DBURL + 'lists/' + userID + '/current';
 
+        listStatusAndStorage.IsListCurrentDone = false;
+
         var listRef = new Firebase(listURL);
 
         //make a Reference so we can detach it later
-        listStatusAndStorage.IsListCurrent = listRef.once('value', function (snap) {
+        return listStatusAndStorage.IsListCurrent = listRef.once('value', function (snap) {
             listStatusAndStorage.db.current = snap.val();
 
             if (snap.val() !== undefined && snap.val() !== null) {
@@ -42,7 +60,10 @@ UserDataServices.factory('IsListCurrent', ['DBURL', 'ListUpdateRouter', function
             } else {
                 listStatusAndStorage.db.isUpToDate = false;
             }
+            listStatusAndStorage.IsListCurrentDone = true;
+            listStatusAndStorage.userID = userID;
 
+            //move to next step
             ListUpdateRouter(listStatusAndStorage);
         });
     };
@@ -51,22 +72,26 @@ UserDataServices.factory('IsListCurrent', ['DBURL', 'ListUpdateRouter', function
 
 UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', 'ListUpdateRouter', function (DBURL, ListUpdateRouter) {
     return function (userID, listStatusAndStorage) {
-        var listTemplatsURL, listTemplatsRef, now, today, error;
+        var listTemplatsURL, listTemplatsRef, listTemplatsRefRefined, now, today, error;
+
+        listStatusAndStorage.FetchCurrentListTemplatesDone = false;
 
         now = new Date();
         today = 'w' + now.getDay();
-        listStatusAndStorage.listTemplats = undefined;
+        listStatusAndStorage.listTemplats = [];
 
         listTemplatsURL = DBURL + 'lists/' + userID + '/listtemplats';
 
         listTemplatsRef = new Firebase(listTemplatsURL);
 
-        listTemplatsRef.orderByChild('isActive').equalTo(true).once('value', function (snap) {
+        listTemplatsRefRefined = listTemplatsRef.orderByChild('isActive').equalTo(true)
+
+        listTemplatsRefRefined.once('value', function (snap) {
             var key, iterator, floorMin, foundList;
-            listStatusAndStorage.listTemplats = [];
             listStatusAndStorage.listTemplats.error = {};
             //if nothing was active return error
             if (!snap.val()) {
+                alert('No Active List Templates found for user: ' + userID)
                 listStatusAndStorage.listTemplats.error.message = 'No Active List Templates found for user: ' + userID;
             } else {
 
@@ -81,6 +106,7 @@ UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', 'ListUpdateRoute
                                 foundList.ID = key;
                                 listStatusAndStorage.listTemplats.push(foundList);
                             } else {
+
                                 listStatusAndStorage.listTemplats.message = 'Failed at Minuets.';
                             }
 
@@ -91,7 +117,8 @@ UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', 'ListUpdateRoute
                        listStatusAndStorage.listTemplats.message = 'Failed at DayOftheWeek.';
                     }
                 }
-
+                listStatusAndStorage.FetchCurrentListTemplatesDone = true;
+                listStatusAndStorage.userID = userID;
                 ListUpdateRouter(listStatusAndStorage);
             }
         });
@@ -101,20 +128,20 @@ UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', 'ListUpdateRoute
 //takes a listStatusAndStorage Object. Assumes the listTemplats is undefined until it is done Processing
 UserDataServices.factory('ListUpdateRouter', ['updateCurrentList', 'FindNewCurrentListFromRecent', function (updateCurrentList, FindNewCurrentListFromRecent) {
     return function (listStatusAndStorage) {
-        var statusTest;
-        statusTest = 'Start \n\n';
-        if (listStatusAndStorage.listTemplats != undefined) {
-            statusTest += listStatusAndStorage.listTemplats + '\n\n';
-            if (listStatusAndStorage.db.current !== null && listStatusAndStorage.db.current !== {}) {
-            statusTest += listStatusAndStorage.db.current + '\n\n';
-                if (listStatusAndStorage.db.isUpToDate === true) {
-                    statusTest += listStatusAndStorage.db.isUpToDate + '\n\n';
-                    for (var i = 0; i < listStatusAndStorage.listTemplats.length; i++) {
-                        if (listStatusAndStorage.listTemplats[i].ID == listStatusAndStorage.db.current.ID) {
-                            return 'Database list is current';
+
+        if (listStatusAndStorage.FetchCurrentListTemplatesDone) {
+            if (listStatusAndStorage.IsListCurrentDone) {
+                if (listStatusAndStorage.db.current !== null && listStatusAndStorage.db.current !== {}) {
+                    if (listStatusAndStorage.db.isUpToDate === true) {
+                        if (listStatusAndStorage.listTemplats.length > 0) {
+                            for (var i = 0; i < listStatusAndStorage.listTemplats.length; i++) {
+                                if (listStatusAndStorage.listTemplats[i].ID == listStatusAndStorage.db.current.ID) {
+
+                                    return 'Database list is current';
+                                }
+                            }
                         }
                     }
-                }
 
             }
                 //alert(statusTest)
@@ -125,10 +152,10 @@ UserDataServices.factory('ListUpdateRouter', ['updateCurrentList', 'FindNewCurre
 
             FindNewCurrentListFromRecent(listStatusAndStorage);
             return 'FindNewCurrentListFromRecent >> isUpToDate:' + listStatusAndStorage.db.isUpToDate;
-
-
+            }
+            return 'listStatusAndStorage.IsListCurrentDone: ' + listStatusAndStorage.IsListCurrentDone;
         }
-        return 'listTemplats undefined'
+        return 'listStatusAndStorage.FetchCurrentListTemplatesDone: ' + listStatusAndStorage.FetchCurrentListTemplatesDone;
     };
 }]);
 
@@ -136,16 +163,27 @@ UserDataServices.factory('ListUpdateRouter', ['updateCurrentList', 'FindNewCurre
 UserDataServices.factory('updateCurrentList', ['DBURL', function (DBURL) {
     return function (listStatusAndStorage) {
         //stub to prove this was called
-
-        listStatusAndStorage.updateCurrentList = 'I was called';
+        alert('updateCurrentList \n\n listStatusAndStorage.IsListCurrentDone: ' + listStatusAndStorage.IsListCurrentDone +'\n\n listStatusAndStorage.FetchCurrentListTemplatesDone: ' + listStatusAndStorage.FetchCurrentListTemplatesDone);
+        return listStatusAndStorage.updateCurrentList = 'I was called';
     };
 }]);
 
 UserDataServices.factory('FindNewCurrentListFromRecent', ['DBURL', function(DBURL){
     return function (listStatusAndStorage) {
-        //stub to prove this was called
+        var newCurrentListURL, newCurrentListRef, templatesURL, templatesRef, foundTemplate;
 
-        listStatusAndStorage.FindNewCurrentListFromRecent = 'I was called';
+        templatesURL = DBURL + 'lists/' + listStatusAndStorage.userID + '/listtemplats';
+        newCurrentListURL = DBURL + 'lists/' + listStatusAndStorage.userID + '/current';
+
+        templatesRef = new Firebase(templatesURL);
+        newCurrentListRef = new Firebase(newCurrentListURL);
+
+
+
+        //stub to prove this was called
+        alert('FindNewCurrentListFromRecent \n\n listStatusAndStorage.IsListCurrentDone: '
+        + listStatusAndStorage.IsListCurrentDone +'\n\n listStatusAndStorage.FetchCurrentListTemplatesDone: ' + listStatusAndStorage.FetchCurrentListTemplatesDone);
+        return listStatusAndStorage.FindNewCurrentListFromRecent = 'I was called';
     };
 }]);
 

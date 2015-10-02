@@ -1,7 +1,5 @@
 'use strict';
 
-
-
 describe('All UserDataServices checks: ', function(){
     var refSpy, FirebaseReal, mockdata, mockfirebaseArrayData, mockfirebaseObjectData, mockFirebase, DBref, mockSnap;
     beforeEach(function(){
@@ -148,50 +146,105 @@ describe('All UserDataServices checks: ', function(){
                 expect(refSpy.equalToisCalledWith).toEqual("z1");
             });
         });
-
-        describe('IsListCurrent: ', function(){
-            var mocklistStatusAndStorage = {
-                'db':{
-                    "current":{},
-                    "isUpToDate":true
-                }
-            }
-            var IsListCurrent;
-            beforeEach(inject(function(_IsListCurrent_){
-                IsListCurrent =  _IsListCurrent_;
-            }));
-
-            it('should exist and be a function.', function(){
-                expect(typeof IsListCurrent).toEqual('function');
-            });
-
-            it('should call Firebase with URL including userID.', function(){
-
-                IsListCurrent("z1", mocklistStatusAndStorage);
-                expect(refSpy.FirebaseisCalledWith).toEqual('https://todotokens.firebaseio.com/lists/z1/current');
-            });
-
-            it('should set db.isUpToDate to false if Current is Null or undefined.', function () {
-                mockdata = undefined;
-                IsListCurrent("z1", mocklistStatusAndStorage);
-                expect(mocklistStatusAndStorage.db.isUpToDate).toEqual(false);
-
-            });
-
-            it('should set db.isUpToDate to false if createdOn is more the 24 hours old', function () {
-                var mockTime = new Date().getTime() - 86400009;
-
-                mockdata = {
-                    createdOn: mockTime
-                }
-
-                IsListCurrent("z1", mocklistStatusAndStorage);
-                expect(mocklistStatusAndStorage.db.isUpToDate).toEqual(false);
-            });
-        });
     });
 
     describe('UserDataServices checks on none root services:', function(){
+        describe('IsListCurrent: ', function(){
+            var IsListCurrent, mocklistStatusAndStorage;
+
+            beforeEach(function () {
+                module('UserDataServices');
+                mockfirebaseArrayData = [];
+                module(function($provide){
+                        $provide.service("$firebaseArray", function () {
+                             var fbObject = function (refObj) {
+                                refObj.firebaseArrayisCalled = true;
+                                mockfirebaseArrayData.args = refObj;
+                                return mockfirebaseArrayData;
+                             };
+                            return fbObject;
+                        });
+                    });
+
+
+                module(function($provide){
+                    $provide.service("$firebaseObject", function () {
+                         var fbObject = function (refObj) {
+                            refObj.firebaseObjectisCalled = true;
+                            mockfirebaseObjectData.args = refObj
+                            return mockfirebaseObjectData;
+
+                         };
+                        return fbObject;
+                    });
+                });
+
+                module(function($provide){
+                    $provide.value("ListUpdateRouter", function(){
+                        var refObj = {};
+                        refObj.ListUpdateRouterisCalled = true;
+                        refObj.ListUpdateRouterisCalledWith = arguments;
+                    });
+                });
+            });
+
+            beforeEach(function () {
+                mocklistStatusAndStorage = {
+                    'db':{
+                        "current":{},
+                        "isUpToDate":true
+                    },
+                };
+            });
+
+
+
+            beforeEach(inject(function(_IsListCurrent_){
+                IsListCurrent =  _IsListCurrent_;
+                FirebaseReal = Firebase;
+                Firebase = mockFirebase;
+            }));
+
+            afterEach(inject(function(){
+                Firebase = FirebaseReal;
+
+                //Clear Data after every use.
+                mockdata = {};
+                mockfirebaseArrayData = [];
+                mockfirebaseObjectData = {};
+            }));
+
+
+
+                it('should exist and be a function.', function(){
+                    expect(typeof IsListCurrent).toEqual('function');
+                });
+
+                it('should call Firebase with URL including userID.', function(){
+
+                    IsListCurrent("z1", mocklistStatusAndStorage);
+                    expect(refSpy.FirebaseisCalledWith).toEqual('https://todotokens.firebaseio.com/lists/z1/current');
+                });
+
+                it('should set db.isUpToDate to false if Current is Null or undefined.', function () {
+                    mockdata = undefined;
+                    IsListCurrent("z1", mocklistStatusAndStorage);
+                    expect(mocklistStatusAndStorage.db.isUpToDate).toEqual(false);
+
+                });
+
+                it('should set db.isUpToDate to false if createdOn is more the 24 hours old', function () {
+                    var mockTime = new Date().getTime() - 86400009;
+
+                    mockdata = {
+                        createdOn: mockTime
+                    }
+
+                    IsListCurrent("z1", mocklistStatusAndStorage);
+                    expect(mocklistStatusAndStorage.db.isUpToDate).toEqual(false);
+                });
+            });
+
 
         describe('FetchCurrentListTemplates: ', function () {
             var FetchCurrentListTemplates, mocklistStatusAndStorage, mockNow, mockMins, mockHours, mockedService;
@@ -223,11 +276,10 @@ describe('All UserDataServices checks: ', function(){
                 });
 
                 module(function($provide){
-                    $provide.service("updateCurrentList", function () {
-                         return function (refObj) {
-                            return refObj.updateCurrentList = true;
-                         };
-                        fbObject;
+                    $provide.value("ListUpdateRouter", function(){
+                        var refObj = {};
+                        refObj.ListUpdateRouterisCalled = true;
+                        refObj.ListUpdateRouterisCalledWith = arguments;
                     });
                 });
             });
@@ -237,6 +289,7 @@ describe('All UserDataServices checks: ', function(){
                 mockHours = mockNow.getHours();
                 mockMins = Math.floor(mockNow.getMinutes() / 10) * 10;
                 mocklistStatusAndStorage = {};
+                spyOn(window, 'alert');
             });
 
 
@@ -262,7 +315,6 @@ describe('All UserDataServices checks: ', function(){
 
             it('should call Firebase with URL including userID', function () {
                 FetchCurrentListTemplates('t2', mocklistStatusAndStorage);
-                //expect(refSpy.FirebaseisCalled).toEqual('');
                 expect(refSpy.FirebaseisCalledWith).toEqual('https://todotokens.firebaseio.com/lists/t2/listtemplats');
             });
 
@@ -369,30 +421,16 @@ describe('All UserDataServices checks: ', function(){
             beforeEach(function () {
                 module('UserDataServices');
                 module(function($provide){
-                        $provide.service("$firebaseArray", function () {
-                             var fbObject = function (refObj) {
-                                refObj.firebaseArrayisCalled = true;
-                                mockfirebaseArrayData.args = refObj;
-                                return mockfirebaseArrayData;
-                             };
-                            return fbObject;
-                        });
+                    $provide.value("updateCurrentList", function () {
+                        return;
                     });
-                mockfirebaseArrayData = [];
-
+                });
                 module(function($provide){
-                    $provide.service("$firebaseObject", function () {
-                         var fbObject = function (refObj) {
-                            refObj.firebaseObjectisCalled = true;
-                            mockfirebaseObjectData.args = refObj
-                            return mockfirebaseObjectData;
-
-                         };
-                        return fbObject;
+                    $provide.value("FindNewCurrentListFromRecent", function () {
+                        return;
                     });
                 });
             });
-
 
             var ListUpdateRouter, mocklistStatusAndStorage;
 
@@ -402,6 +440,7 @@ describe('All UserDataServices checks: ', function(){
             }));
 
             beforeEach(function (){
+                spyOn(window, 'alert');
                 mocklistStatusAndStorage = {
                     "db":{}
                 };
@@ -426,6 +465,8 @@ describe('All UserDataServices checks: ', function(){
                 mocklistStatusAndStorage.db.current = mockcurrentList;
                 mocklistStatusAndStorage.db.isUpToDate = true;
                 mocklistStatusAndStorage.listTemplats = mocklistTemplats;
+                mocklistStatusAndStorage.IsListCurrentDone = true;
+                mocklistStatusAndStorage.FetchCurrentListTemplatesDone = true;
 
 
                 status = ListUpdateRouter(mocklistStatusAndStorage);
@@ -448,6 +489,9 @@ describe('All UserDataServices checks: ', function(){
                 mocklistStatusAndStorage.db.current = mockcurrentList;
                 mocklistStatusAndStorage.listTemplats = mocklistTemplats;
 
+                mocklistStatusAndStorage.IsListCurrentDone = true;
+                mocklistStatusAndStorage.FetchCurrentListTemplatesDone = true;
+
                 mocklistStatusAndStorage.db.isUpToDate = true;
                 status = ListUpdateRouter(mocklistStatusAndStorage);
 
@@ -468,17 +512,17 @@ describe('All UserDataServices checks: ', function(){
 
                 mocklistTemplats = [];
 
+                mocklistStatusAndStorage.IsListCurrentDone = true;
+                mocklistStatusAndStorage.FetchCurrentListTemplatesDone = true;
                 mocklistStatusAndStorage.db.current = mockcurrentList;
                 mocklistStatusAndStorage.listTemplats = mocklistTemplats;
 
                 mocklistStatusAndStorage.db.isUpToDate = true;
                 status = ListUpdateRouter(mocklistStatusAndStorage);
-
                 expect(status).toEqual('FindNewCurrentListFromRecent >> isUpToDate:true');
 
                 mocklistStatusAndStorage.db.isUpToDate = false;
                 status = ListUpdateRouter(mocklistStatusAndStorage);
-
                 expect(status).toEqual('FindNewCurrentListFromRecent >> isUpToDate:false');
             });
 
@@ -493,6 +537,8 @@ describe('All UserDataServices checks: ', function(){
 
                 mocklistStatusAndStorage.db.current = mockcurrentList;
                 mocklistStatusAndStorage.listTemplats = mocklistTemplats;
+                mocklistStatusAndStorage.IsListCurrentDone = true;
+                mocklistStatusAndStorage.FetchCurrentListTemplatesDone = true;
 
                 mocklistStatusAndStorage.db.isUpToDate = true;
                 status = ListUpdateRouter(mocklistStatusAndStorage);
@@ -509,6 +555,9 @@ describe('All UserDataServices checks: ', function(){
 
                 mocklistStatusAndStorage.db.current = mockcurrentList;
                 mocklistStatusAndStorage.listTemplats = mocklistTemplats;
+                mocklistStatusAndStorage.IsListCurrentDone = true;
+                mocklistStatusAndStorage.FetchCurrentListTemplatesDone = true;
+
 
                 mocklistStatusAndStorage.db.isUpToDate = true;
                 status = ListUpdateRouter(mocklistStatusAndStorage);
@@ -516,7 +565,7 @@ describe('All UserDataServices checks: ', function(){
                 expect(status).toEqual('FindNewCurrentListFromRecent >> isUpToDate:true');
             });
 
-            it('should not process further if listTemplats is undefined.', function(){
+            it('should not process further if either is not done processing ', function(){
                 var mockcurrentList, mocklistTemplats, status;
 
                 mockcurrentList = {};
@@ -524,10 +573,54 @@ describe('All UserDataServices checks: ', function(){
                 mocklistStatusAndStorage.db.current = mockcurrentList;
                 mocklistStatusAndStorage.db.isUpToDate = true;
                 mocklistStatusAndStorage.listTemplats = mocklistTemplats;
+                mocklistStatusAndStorage.IsListCurrentDone = false;
+                mocklistStatusAndStorage.FetchCurrentListTemplatesDone = true;
 
-                expect(status).toEqual(undefined);
+                status = ListUpdateRouter(mocklistStatusAndStorage);
+                expect(status).toEqual('listStatusAndStorage.IsListCurrentDone: false');
+
+                mocklistStatusAndStorage.IsListCurrentDone = true;
+                mocklistStatusAndStorage.FetchCurrentListTemplatesDone = false;
+
+                status = ListUpdateRouter(mocklistStatusAndStorage);
+                expect(status).toEqual('listStatusAndStorage.FetchCurrentListTemplatesDone: false');
+
+                mocklistStatusAndStorage.IsListCurrentDone = false;
+                mocklistStatusAndStorage.FetchCurrentListTemplatesDone = false;
+
+                status = ListUpdateRouter(mocklistStatusAndStorage);
+                expect(status).toEqual('listStatusAndStorage.FetchCurrentListTemplatesDone: false');
 
             });
+        });
+
+        describe('FindNewCurrentListFromRecent: ', function(){
+            var FindNewCurrentListFromRecent;
+
+            beforeEach(function () {
+                module('UserDataServices');
+                module(function($provide){
+                    $provide.value("updateCurrentList", function () {
+                        return;
+                    });
+                });
+            });
+
+            beforeEach(inject(function(_FindNewCurrentListFromRecent_){
+                FindNewCurrentListFromRecent = _FindNewCurrentListFromRecent_;
+                FirebaseReal = Firebase;
+                Firebase = mockFirebase;
+            }));
+
+            afterEach(inject(function(){
+                Firebase = FirebaseReal;
+
+                //Clear Data after every use.
+                mockdata = {};
+                mockfirebaseArrayData = [];
+                mockfirebaseObjectData = {};
+            }));
+            //cursor
         });
     });
 });
