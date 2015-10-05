@@ -72,7 +72,7 @@ UserDataServices.factory('IsListCurrent', ['DBURL', 'ListUpdateRouter', function
 
 UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', 'ListUpdateRouter', function (DBURL, ListUpdateRouter) {
     return function (userID, listStatusAndStorage) {
-        var listTemplatsURL, listTemplatsRef, listTemplatsRefRefined, now, today, error;
+        var listTemplatsURL, listTemplatsRef, now, today, error;
 
         listStatusAndStorage.FetchCurrentListTemplatesDone = false;
 
@@ -84,9 +84,8 @@ UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', 'ListUpdateRoute
 
         listTemplatsRef = new Firebase(listTemplatsURL);
 
-        listTemplatsRefRefined = listTemplatsRef.orderByChild('isActive').equalTo(true)
+        listTemplatsRef.orderByChild('isActive').equalTo(true).once('value', function (snap) {
 
-        listTemplatsRefRefined.once('value', function (snap) {
             var key, iterator, floorMin, foundList;
             listStatusAndStorage.listTemplats.error = {};
             //if nothing was active return error
@@ -170,15 +169,79 @@ UserDataServices.factory('updateCurrentList', ['DBURL', function (DBURL) {
 
 UserDataServices.factory('FindNewCurrentListFromRecent', ['DBURL', function(DBURL){
     return function (listStatusAndStorage) {
-        var newCurrentListURL, newCurrentListRef, templatesURL, templatesRef, foundTemplate;
+        var newCurrentListURL, newCurrentListRef, templatesURL, templatesRef, foundTemplate, userID;
 
-        templatesURL = DBURL + 'lists/' + listStatusAndStorage.userID + '/listtemplats';
-        newCurrentListURL = DBURL + 'lists/' + listStatusAndStorage.userID + '/current';
+        userID = listStatusAndStorage.userID
+
+        templatesURL = DBURL + 'lists/' + userID + '/listtemplats';
+        newCurrentListURL = DBURL + 'lists/' + userID + '/current';
 
         templatesRef = new Firebase(templatesURL);
         newCurrentListRef = new Firebase(newCurrentListURL);
 
+        templatesRef.orderByChild('isActive').equalTo(true).once('value', function (snap) {
+            var key, iterator, floorMin, foundList, currentHour, minHour, now, today;
+            listStatusAndStorage.listTemplats.error = {};
+            //if nothing was active return error
+            if (!snap.val()) {
+                alert('No Active List Templates found for user: ' + userID)
+                listStatusAndStorage.listTemplats.error.message = 'No Active List Templates found for user: ' + userID;
+                return
+            }
 
+
+                now = new Date();
+                today = 'w' + now.getDay();
+
+                currentHour = now.getHours();
+
+                minHour = currentHour - 12;
+
+                if(minHour < 0 ){
+                    minHour = 0;
+                }
+
+
+                for (key in snap.val()) {
+                    iterator = snap.val()[key];
+                    if (iterator.daysOfTheWeek[today] === true) {
+                        if (iterator.startHour <= currentHour && iterator.startHour >= minHour) {
+                            if (!foundList) {
+                                listStatusAndStorage.listTemplats.message = 'Found first with key: ' + key;
+                                foundList = iterator;
+                                foundList.ID = key;
+                            } else {
+
+                                if (iterator.startHour === foundList.startHour) {
+                                    if (iterator.startMin > foundList.startMin) {
+                                        listStatusAndStorage.listTemplats.message = 'Found Next by minutes: key: ' + key;
+                                        foundList = iterator;
+                                        foundList.ID = key;
+                                    } else {
+                                        listStatusAndStorage.listTemplats.message = 'Passed at greater then mins at key: ' + key;
+                                    }
+
+                                } else {
+                                    if (iterator.startHour > foundList.startHour) {
+                                        listStatusAndStorage.listTemplats.message = 'Found Next by hours: key: ' + key;
+                                        foundList = iterator;
+                                        foundList.ID = key;
+                                    } else {
+                                        listStatusAndStorage.listTemplats.message = 'Passed at greater then Hours at key: ' + key;
+                                    }
+                                }
+                            }
+                        } else {
+                            listStatusAndStorage.listTemplats.message = 'Passed at Hours check.';
+                        }
+                    } else {
+                       listStatusAndStorage.listTemplats.message = 'Failed at DayOftheWeek.';
+                       listStatusAndStorage.listTemplats.error.message = 'No Templates found for user: ' + userID + ' for Today.';
+                       //alert('No Templates found for user: ' + userID + ' for Today.');
+                    }
+                }
+
+        });
 
         //stub to prove this was called
         alert('FindNewCurrentListFromRecent \n\n listStatusAndStorage.IsListCurrentDone: '
