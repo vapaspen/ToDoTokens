@@ -11,7 +11,6 @@ app.controller('ListCtrl', ['$scope','$routeParams','FetchAUser', 'ListUpdateTri
     $scope.data = FetchAUser($routeParams.userID);
     $scope.title = "Users's List";
     $scope.firstName = 'Users';
-
     $scope.listStatusAndStorage = ListUpdateTrigger($routeParams.userID, $scope.listStatusAndStorage);
 
 

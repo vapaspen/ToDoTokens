@@ -135,7 +135,7 @@ UserDataServices.factory('ListUpdateRouter', ['updateCurrentList', 'FindNewCurre
                         if (listStatusAndStorage.listTemplats.length > 0) {
                             for (var i = 0; i < listStatusAndStorage.listTemplats.length; i++) {
                                 if (listStatusAndStorage.listTemplats[i].ID == listStatusAndStorage.db.current.ID) {
-
+                                    alert('Test')
                                     return 'Database list is current';
                                 }
                             }
@@ -158,26 +158,16 @@ UserDataServices.factory('ListUpdateRouter', ['updateCurrentList', 'FindNewCurre
     };
 }]);
 
-
-UserDataServices.factory('updateCurrentList', ['DBURL', function (DBURL) {
+UserDataServices.factory('FindNewCurrentListFromRecent', ['DBURL', 'updateCurrentList', function(DBURL, updateCurrentList){
     return function (listStatusAndStorage) {
-        //stub to prove this was called
-        alert('updateCurrentList \n\n listStatusAndStorage.IsListCurrentDone: ' + listStatusAndStorage.IsListCurrentDone +'\n\n listStatusAndStorage.FetchCurrentListTemplatesDone: ' + listStatusAndStorage.FetchCurrentListTemplatesDone);
-        return listStatusAndStorage.updateCurrentList = 'I was called';
-    };
-}]);
-
-UserDataServices.factory('FindNewCurrentListFromRecent', ['DBURL', function(DBURL){
-    return function (listStatusAndStorage) {
-        var newCurrentListURL, newCurrentListRef, templatesURL, templatesRef, foundTemplate, userID;
+        var templatesURL, templatesRef, foundTemplate, userID;
 
         userID = listStatusAndStorage.userID
 
         templatesURL = DBURL + 'lists/' + userID + '/listtemplats';
-        newCurrentListURL = DBURL + 'lists/' + userID + '/current';
+
 
         templatesRef = new Firebase(templatesURL);
-        newCurrentListRef = new Firebase(newCurrentListURL);
 
         templatesRef.orderByChild('isActive').equalTo(true).once('value', function (snap) {
             var key, iterator, floorMin, foundList, currentHour, minHour, now, today;
@@ -232,21 +222,49 @@ UserDataServices.factory('FindNewCurrentListFromRecent', ['DBURL', function(DBUR
                                 }
                             }
                         } else {
-                            listStatusAndStorage.listTemplats.message = 'Passed at Hours check.';
+                            listStatusAndStorage.listTemplats.message = 'Passed on Hours between at: ' + key;
                         }
                     } else {
-                       listStatusAndStorage.listTemplats.message = 'Failed at DayOftheWeek.';
-                       listStatusAndStorage.listTemplats.error.message = 'No Templates found for user: ' + userID + ' for Today.';
-                       //alert('No Templates found for user: ' + userID + ' for Today.');
+                       listStatusAndStorage.listTemplats.message = 'Passed on DayOfTheWeek at: ' + key;
+                       //listStatusAndStorage.listTemplats.error.message = 'No Templates found for user: ' + userID + ' for Today.';
                     }
                 }
 
+            if (!foundList) {
+                alert('No Templates found Message: ' + listStatusAndStorage.listTemplats.message);
+                listStatusAndStorage.listTemplats.error.message = 'No Templates found for user: ' + userID;
+
+
+                return
+            }
+            listStatusAndStorage.listTemplats.push(foundList);
+            updateCurrentList(listStatusAndStorage);
+
         });
+    };
+}]);
+
+
+UserDataServices.factory('updateCurrentList', ['DBURL', function (DBURL) {
+    return function (listStatusAndStorage) {
+        var userID, currentURL, currentRef, now;
+
+        now = new Date().getTime();
+
+        listStatusAndStorage.listTemplats[0].createdOn = now;
+
+        userID = listStatusAndStorage.userID
+
+        currentURL = DBURL + 'lists/' + userID + '/current';
+
+        currentRef = new Firebase(currentURL);
+
+        currentRef.set(listStatusAndStorage.listTemplats[0]);
 
         //stub to prove this was called
-        alert('FindNewCurrentListFromRecent \n\n listStatusAndStorage.IsListCurrentDone: '
-        + listStatusAndStorage.IsListCurrentDone +'\n\n listStatusAndStorage.FetchCurrentListTemplatesDone: ' + listStatusAndStorage.FetchCurrentListTemplatesDone);
-        return listStatusAndStorage.FindNewCurrentListFromRecent = 'I was called';
+        //alert('updateCurrentList \n\n listStatusAndStorage.IsListCurrentDone: ' + listStatusAndStorage.IsListCurrentDone +'\n\n listStatusAndStorage.FetchCurrentListTemplatesDone: ' + listStatusAndStorage.FetchCurrentListTemplatesDone);
+        alert(listStatusAndStorage.listTemplats[0].ID)
+        return listStatusAndStorage.updateCurrentList = 'I was called';
     };
 }]);
 
@@ -287,7 +305,7 @@ UserDataServices.factory('ManualDbUpdate', ['DBURL', function (DBURL) {
                 listtemplats:{
                     "n934tbg1d":{
                         createdOn: 1443123299604,
-                        isActive:true,
+                        isActive:false,
                         daysOfTheWeek:{
                             w0:false,
                             w1:true,

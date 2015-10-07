@@ -145,275 +145,6 @@ describe('All UserDataServices checks: ', function(){
                 expect(refSpy.equalToisCalledWith).toEqual("z1");
             });
         });
-//cursor
-        describe('FindNewCurrentListFromRecent: ' , function () {
-            var FindNewCurrentListFromRecent, mocklistStatusAndStorage, mockNow, mockHours, mockMins;
-
-            beforeEach(inject(function(_FindNewCurrentListFromRecent_){
-                FindNewCurrentListFromRecent =  _FindNewCurrentListFromRecent_;
-            }));
-
-            beforeEach(function(){
-                mockNow = new Date(2015, 10, 4, 13, 20);
-                mockHours = mockNow.getHours();
-                mockMins = Math.floor(mockNow.getMinutes() / 10) * 10;
-                spyOn(window,"Date").and.returnValue(mockNow)
-            });
-
-            it('should exist and be a function.', function () {
-                expect(typeof FindNewCurrentListFromRecent).toEqual('function')
-            });
-
-            it('should call orderByChild with isActive.', function () {
-                mocklistStatusAndStorage = {
-                    userID:'z1',
-                    listTemplats:{}
-                };
-
-                mockdata = null;
-
-                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
-
-                expect(refSpy.orderByChildisCalled).toBeTruthy();
-                expect(refSpy.orderByChildisCalledWith).toEqual("isActive");
-            });
-
-            it('should add a template error message if the database call returns null', function () {
-                mocklistStatusAndStorage = {
-                    userID:'z1',
-                    listTemplats:{}
-                };
-
-                mockdata = null;
-
-                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
-
-                expect(mocklistStatusAndStorage.listTemplats.error.message).toEqual('No Active List Templates found for user: z1');
-
-            });
-
-            it('should return a template Error message if there are not active templates for today', function () {
-                mocklistStatusAndStorage = {
-                    userID:'z1',
-                    listTemplats:{}
-                };
-
-                mockdata = {
-                    "n934tbg1d":{
-                        startHour:25,
-                        startMin:70,
-                        daysOfTheWeek:{
-                                w0:false,
-                                w1:false,
-                                w2:false,
-                                w3:false,
-                                w4:false,
-                                w5:false,
-                                w6:false
-                        },
-                    }
-                };
-
-                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
-
-                expect(mocklistStatusAndStorage.listTemplats.error.message).toEqual('No Templates found for user: z1 for Today.');
-
-            });
-
-            it('should add message that it found a template when it has a valid template and there is no other templates found. ', function () {
-
-                mocklistStatusAndStorage = {
-                    userID:'z1',
-                    listTemplats:{}
-                };
-
-                mockdata = {
-                    "n934tbg1d":{
-                        startHour: mockHours,
-                        startMin: mockMins,
-                        daysOfTheWeek:{
-                                w0:true,
-                                w1:true,
-                                w2:true,
-                                w3:true,
-                                w4:true,
-                                w5:true,
-                                w6:true
-                        },
-                    }
-                };
-
-                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
-
-                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Found first with key: n934tbg1d');
-
-            });
-
-            it('should message that it has found the next template when it has found at least two templates. ', function () {
-                mocklistStatusAndStorage = {
-                    userID:'z1',
-                    listTemplats:{}
-                };
-
-                mockdata = {
-                    "n934tbg1d":{
-                        startHour: mockHours,
-                        startMin: mockMins,
-                        daysOfTheWeek:{
-                                w0:true,
-                                w1:true,
-                                w2:true,
-                                w3:true,
-                                w4:true,
-                                w5:true,
-                                w6:true
-                        }
-                    },
-                        "2n4n5n7n8n":{
-                        startHour: mockHours,
-                        startMin: mockMins + 1,
-                        daysOfTheWeek:{
-                                w0:true,
-                                w1:true,
-                                w2:true,
-                                w3:true,
-                                w4:true,
-                                w5:true,
-                                w6:true
-                        }
-                    }
-                };
-
-                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
-
-                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Found Next by minutes: key: 2n4n5n7n8n');
-
-            });
-
-            it('should message that it has passed if on mins the last Template checked matched hours but was equal to, or less then, the number of minutes. ', function () {
-
-                mocklistStatusAndStorage = {
-                    userID:'z1',
-                    listTemplats:{}
-                };
-
-
-                mockdata = {
-                    "n934tbg1d":{
-                        startHour: mockHours,
-                        startMin: mockMins,
-                        daysOfTheWeek:{
-                                w0:true,
-                                w1:true,
-                                w2:true,
-                                w3:true,
-                                w4:true,
-                                w5:true,
-                                w6:true
-                        }
-                    },
-                        "2n4n5n7n8n":{
-                        startHour: mockHours,
-                        startMin: mockMins - 1,
-                        daysOfTheWeek:{
-                                w0:true,
-                                w1:true,
-                                w2:true,
-                                w3:true,
-                                w4:true,
-                                w5:true,
-                                w6:true
-                        }
-                    }
-                };
-
-                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
-
-                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Passed at greater then mins at key: 2n4n5n7n8n');
-
-            });
-
-            it('should message that it has found the next template by hours if it finds a template by greater then Hours. ', function () {
-
-                mocklistStatusAndStorage = {
-                    userID:'z1',
-                    listTemplats:{}
-                };
-
-                mockdata = {
-                    "n934tbg1d":{
-                        startHour: mockHours - 2,
-                        startMin: mockMins,
-                        daysOfTheWeek:{
-                                w0:true,
-                                w1:true,
-                                w2:true,
-                                w3:true,
-                                w4:true,
-                                w5:true,
-                                w6:true
-                        }
-                    },
-                        "2n4n5n7n8n":{
-                        startHour: mockHours - 1,
-                        startMin: mockMins,
-                        daysOfTheWeek:{
-                                w0:true,
-                                w1:true,
-                                w2:true,
-                                w3:true,
-                                w4:true,
-                                w5:true,
-                                w6:true
-                        }
-                    }
-                };
-
-                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
-                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Found Next by hours: key: 2n4n5n7n8n');
-
-            });
-
-            it('should message that it has passed on hours at if the last Template checked was equal to, or less then, the number of hours. ', function () {
-
-                mocklistStatusAndStorage = {
-                    userID:'z1',
-                    listTemplats:{}
-                };
-
-                mockdata = {
-                    "n934tbg1d":{
-                        startHour: mockHours - 1,
-                        startMin: mockMins,
-                        daysOfTheWeek:{
-                                w0:true,
-                                w1:true,
-                                w2:true,
-                                w3:true,
-                                w4:true,
-                                w5:true,
-                                w6:true
-                        }
-                    },
-                        "2n4n5n7n8n":{
-                        startHour: mockHours - 2,
-                        startMin: mockMins,
-                        daysOfTheWeek:{
-                                w0:true,
-                                w1:true,
-                                w2:true,
-                                w3:true,
-                                w4:true,
-                                w5:true,
-                                w6:true
-                        }
-                    }
-                };
-
-                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
-                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Passed at greater then Hours at key: 2n4n5n7n8n');
-            });
-        });
     });
 
 
@@ -863,17 +594,34 @@ describe('All UserDataServices checks: ', function(){
 
             });
         });
-
-        describe('Stub Start: ', function(){
-            var FindNewCurrentListFromRecent;
+//cursor
+        describe('FindNewCurrentListFromRecent: ' , function () {
+            var FindNewCurrentListFromRecent, mocklistStatusAndStorage, mockNow, mockHours, mockMins, localSpy;
 
             beforeEach(function () {
                 module('UserDataServices');
                 module(function($provide){
-                    $provide.value("updateCurrentList", function () {
-                        return;
+                    $provide.value("updateCurrentList", function (Obj) {
+                        localSpy = {
+                            isCalled:true,
+                            isCalledWith: Obj
+                        }
                     });
                 });
+
+                mockNow = new Date(2015, 10, 4, 13, 20);
+                mockHours = mockNow.getHours();
+                mockMins = Math.floor(mockNow.getMinutes() / 10) * 10;
+                spyOn(window,"Date").and.returnValue(mockNow);
+                spyOn(window, "alert");
+                mocklistStatusAndStorage = {
+                    userID:'z1',
+                    listTemplats:[]
+                };
+                localSpy = {
+                    isCalled:false,
+                    isCalledWith:{}
+                }
             });
 
             beforeEach(inject(function(_FindNewCurrentListFromRecent_){
@@ -890,6 +638,323 @@ describe('All UserDataServices checks: ', function(){
                 mockfirebaseArrayData = [];
                 mockfirebaseObjectData = {};
             }));
+
+            it('should exist and be a function.', function () {
+                expect(typeof FindNewCurrentListFromRecent).toEqual('function')
+            });
+
+            it('should call orderByChild with isActive.', function () {
+
+                mockdata = null;
+
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+
+                expect(refSpy.orderByChildisCalled).toBeTruthy();
+                expect(refSpy.orderByChildisCalledWith).toEqual("isActive");
+            });
+
+            it('should add a template error message if the database call returns null', function () {
+
+                mockdata = null;
+
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+
+                expect(mocklistStatusAndStorage.listTemplats.error.message).toEqual('No Active List Templates found for user: z1');
+
+            });
+
+            it('should add message that it found a template when it has a valid template and there is no other templates Processed after this one. ', function () {
+
+                mockdata = {
+                    "n934tbg1d":{
+                        startHour: mockHours,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        },
+                    }
+                };
+
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+
+                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Found first with key: n934tbg1d');
+
+            });
+
+            it('should message that it has found the next template when it has found at least two templates. ', function () {
+
+                mockdata = {
+                    "n934tbg1d":{
+                        startHour: mockHours,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        }
+                    },
+                        "2n4n5n7n8n":{
+                        startHour: mockHours,
+                        startMin: mockMins + 1,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        }
+                    }
+                };
+
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+
+                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Found Next by minutes: key: 2n4n5n7n8n');
+
+            });
+
+            it('should message that it has passed if on mins the last Template checked matched hours but was equal to, or less then, the number of minutes. ', function () {
+
+
+                mockdata = {
+                    "n934tbg1d":{
+                        startHour: mockHours,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        }
+                    },
+                        "2n4n5n7n8n":{
+                        startHour: mockHours,
+                        startMin: mockMins - 1,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        }
+                    }
+                };
+
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+
+                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Passed at greater then mins at key: 2n4n5n7n8n');
+
+            });
+
+            it('should message that it has found the next template by hours if it finds a template by greater then Hours. ', function () {
+
+                mockdata = {
+                    "n934tbg1d":{
+                        startHour: mockHours - 2,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        }
+                    },
+                        "2n4n5n7n8n":{
+                        startHour: mockHours - 1,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        }
+                    }
+                };
+
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Found Next by hours: key: 2n4n5n7n8n');
+
+            });
+
+            it('should message that it has passed on hours at if the last Template checked was equal to, or less then, the number of hours. ', function () {
+
+                mockdata = {
+                    "n934tbg1d":{
+                        startHour: mockHours - 1,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        }
+                    },
+                        "2n4n5n7n8n":{
+                        startHour: mockHours - 2,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        }
+                    }
+                };
+
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Passed at greater then Hours at key: 2n4n5n7n8n');
+            });
+            it('should message that it has passed on hours at if the last Template checked was great to the current hour, or less than the Min hour. ', function () {
+
+                mockdata = {
+                    "n934tbg1d":{
+                        startHour: mockHours - 13,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        }
+                    }
+                };
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Passed on Hours between at: n934tbg1d');
+
+                mockdata = {
+                    "n934tbg1d":{
+                        startHour: mockHours + 1,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        }
+                    }
+                };
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Passed on Hours between at: n934tbg1d');
+            });
+
+            it('should message that it passed on DayOfTheWeek when the last item failes the Day of the Week Check. ', function () {
+
+                mockdata = {
+                    "n934tbg1d":{
+                        startHour: mockHours,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        }
+                    },
+                        "2n4n5n7n8n":{
+                        startHour: mockHours,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:false,
+                                w1:false,
+                                w2:false,
+                                w3:false,
+                                w4:false,
+                                w5:false,
+                                w6:false
+                        }
+                    }
+                };
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+                expect(mocklistStatusAndStorage.listTemplats.message).toEqual('Passed on DayOfTheWeek at: 2n4n5n7n8n');
+            });
+
+           it('should return a template Error message if there are not active templates found.', function () {
+
+                mockdata = {
+                    "n934tbg1d":{
+                        startHour:25,
+                        startMin:70,
+                        daysOfTheWeek:{
+                                w0:false,
+                                w1:false,
+                                w2:false,
+                                w3:false,
+                                w4:false,
+                                w5:false,
+                                w6:false
+                        },
+                    }
+                };
+
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+
+                expect(mocklistStatusAndStorage.listTemplats.error.message).toEqual('No Templates found for user: z1');
+                expect(localSpy.isCalledWith).toEqual({});
+                expect(localSpy.isCalled).toEqual(false);
+
+            });
+
+            it('should call updateCurrentList if a list item is found.', function () {
+
+                mockdata = {
+                    "n934tbg1d":{
+                        startHour: mockHours,
+                        startMin: mockMins,
+                        daysOfTheWeek:{
+                                w0:true,
+                                w1:true,
+                                w2:true,
+                                w3:true,
+                                w4:true,
+                                w5:true,
+                                w6:true
+                        },
+                    }
+                };
+
+                FindNewCurrentListFromRecent(mocklistStatusAndStorage);
+
+                expect(localSpy.isCalled).toEqual(true);
+                expect(localSpy.isCalledWith.listTemplats[0].ID).toEqual('n934tbg1d');
+
+            });
 
         });
     });
