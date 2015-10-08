@@ -246,7 +246,166 @@ describe('All UserDataServices checks: ', function(){
                 });
             });
 
+        describe('FetchListTemplates: ', function(){
+            var FetchListTemplates, mocklistStatusAndStorage, localSpy;
 
+            beforeEach(function () {
+                module('UserDataServices');
+
+                module(function($provide){
+                    $provide.value("FindMostRecentTemplate", function(){
+                        localSpy = {};
+                        localSpy.FindMostRecentTemplateisCalled = true;
+                        localSpy.FindMostRecentTemplateisCalledWith = arguments;
+                    });
+                });
+            });
+
+            beforeEach(function () {
+                mocklistStatusAndStorage = {
+                    'db':{
+                        "current":{},
+                        "isUpToDate":true
+                    },
+                };
+            });
+
+
+
+            beforeEach(inject(function(_FetchListTemplates_){
+                FetchListTemplates =  _FetchListTemplates_;
+                FirebaseReal = Firebase;
+                Firebase = mockFirebase;
+            }));
+
+            afterEach(inject(function(){
+                Firebase = FirebaseReal;
+
+                //Clear Data after every use.
+                mockdata = {};
+                mockfirebaseArrayData = [];
+                mockfirebaseObjectData = {};
+            }));
+
+
+
+            it('should exist and be a function.', function () {
+                expect(typeof FetchListTemplates).toEqual('function');
+            });
+
+            it('should call Firebase with URL including userID', function () {
+                FetchListTemplates('t2', mocklistStatusAndStorage);
+                expect(refSpy.FirebaseisCalledWith).toEqual('https://todotokens.firebaseio.com/lists/t2/listtemplats');
+            });
+
+            it('should call orderByChild isActive and equalTo with True.', function () {
+                FetchListTemplates('t2', mocklistStatusAndStorage);
+
+                expect(refSpy.orderByChildisCalledWith).toEqual("isActive");
+                expect(refSpy.equalToisCalledWith).toEqual(true);
+            });
+
+            it('should set listTemplats to empty array if there are not templates found.', function () {
+                mockdata = null;
+                FetchListTemplates('t2', mocklistStatusAndStorage);
+
+                expect(mocklistStatusAndStorage.db.listTemplats).toEqual({});
+            });
+
+            it('should set listTemplats to empty array if there are not templates found.', function () {
+                mockdata = {
+                    'nh5j8skw3':{
+                    'createdOn': 1443123299604,
+                    }
+                };
+                FetchListTemplates('t2', mocklistStatusAndStorage);
+
+                expect(mocklistStatusAndStorage.db.listTemplats.nh5j8skw3.createdOn).toEqual(1443123299604);
+            });
+
+            it('should call FindMostRecentTemplate with Done as true. ', function () {
+                mockdata = null;
+                FetchListTemplates('t2', mocklistStatusAndStorage);
+
+                expect(localSpy.FindMostRecentTemplateisCalled).toEqual(true);
+                expect(localSpy.FindMostRecentTemplateisCalledWith[0]).toEqual('t2');
+                expect(localSpy.FindMostRecentTemplateisCalledWith[1].FetchListTemplatesDone).toEqual(true);
+            });
+        });
+
+        describe('FindMostRecentTemplate: ', function(){
+            var FindMostRecentTemplate, mocklistStatusAndStorage, localSpy;
+
+            beforeEach(function () {
+                module('UserDataServices');
+
+                module(function($provide){
+                    $provide.value("UpDateAndArchiveCurrent", function(){
+                        localSpy = {};
+                        localSpy.UpDateAndArchiveCurrentisCalled = true;
+                        localSpy.UpDateAndArchiveCurrentisCalledWith = arguments;
+                    });
+                });
+            });
+
+            beforeEach(function () {
+                mocklistStatusAndStorage = {
+                    'db':{
+                        "current":{},
+                        "isUpToDate":true
+                    },
+                };
+            });
+
+
+
+            beforeEach(inject(function(_FindMostRecentTemplate_){
+                FindMostRecentTemplate =  _FindMostRecentTemplate_;
+                FirebaseReal = Firebase;
+                Firebase = mockFirebase;
+            }));
+
+            afterEach(inject(function(){
+                Firebase = FirebaseReal;
+
+                //Clear Data after every use.
+                mockdata = {};
+            }));
+
+            it('should exist and be a function.', function () {
+                expect(typeof FindMostRecentTemplate).toEqual('function');
+            });
+
+            it('should pass on running if either FetchListTemplates, or IsListCurrent is not finished', function () {
+                var result
+
+                mocklistStatusAndStorage.FetchListTemplatesDone = false;
+                mocklistStatusAndStorage.IsListCurrentDone = false;
+                result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+
+                expect(result).toEqual('pass: FetchListTemplatesDone: false IsListCurrentDone: false')
+
+                mocklistStatusAndStorage.FetchListTemplatesDone = true;
+                mocklistStatusAndStorage.IsListCurrentDone = false;
+                result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+
+                expect(result).toEqual('pass: FetchListTemplatesDone: true IsListCurrentDone: false')
+
+                mocklistStatusAndStorage.FetchListTemplatesDone = false;
+                mocklistStatusAndStorage.IsListCurrentDone = true;
+                result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+
+                expect(result).toEqual('pass: FetchListTemplatesDone: false IsListCurrentDone: true')
+
+                mocklistStatusAndStorage.FetchListTemplatesDone = true;
+                mocklistStatusAndStorage.IsListCurrentDone = true;
+                result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+
+                expect(result).not.toBeTruthy();
+            });
+        });
+
+//_________________OLD_-----------------------________-
         describe('FetchCurrentListTemplates: ', function () {
             var FetchCurrentListTemplates, mocklistStatusAndStorage, mockNow, mockMins, mockHours, mockedService;
 
@@ -594,7 +753,7 @@ describe('All UserDataServices checks: ', function(){
 
             });
         });
-//cursor
+
         describe('FindNewCurrentListFromRecent: ' , function () {
             var FindNewCurrentListFromRecent, mocklistStatusAndStorage, mockNow, mockHours, mockMins, localSpy;
 

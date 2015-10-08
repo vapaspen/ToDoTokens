@@ -69,7 +69,46 @@ UserDataServices.factory('IsListCurrent', ['DBURL', 'ListUpdateRouter', function
     };
 }]);
 
+UserDataServices.factory('FetchListTemplates', ['DBURL', 'FindMostRecentTemplate', function (DBURL, FindMostRecentTemplate) {
+    return function (userID, listStatusAndStorage) {
+        var listTemplatsURL, listTemplatsRef;
 
+        listStatusAndStorage.FetchListTemplatesDone = false;
+        listTemplatsURL = DBURL + 'lists/' + userID + '/listtemplats';
+
+        listTemplatsRef = new Firebase(listTemplatsURL);
+
+        listTemplatsRef.orderByChild('isActive').equalTo(true).once('value', function (snap) {
+            if (!snap.val()) {
+                listStatusAndStorage.db.listTemplats = {};
+                listStatusAndStorage.db.listTemplats.message = 'No active Templates found.';
+            } else {
+                listStatusAndStorage.db.listTemplats = snap.val()
+            }
+
+            //move to next step.
+            listStatusAndStorage.FetchListTemplatesDone = true;
+            FindMostRecentTemplate(userID ,listStatusAndStorage);
+        });
+    };
+}]);
+
+UserDataServices.factory('FindMostRecentTemplate', ['DBURL', function (DBURL) {
+    return function (userID, listStatusAndStorage) {
+        if (!listStatusAndStorage.FetchListTemplatesDone || !listStatusAndStorage.IsListCurrentDone) {
+            return 'pass: FetchListTemplatesDone: ' + listStatusAndStorage.FetchListTemplatesDone + ' IsListCurrentDone: ' + listStatusAndStorage.IsListCurrentDone;
+        }
+
+
+        //move to next step.
+        //UpDateAndArchiveCurrent(userID, listStatusAndStorage)
+    };
+}]);
+
+
+///-----------------------------------OLD-----------------------------------///
+///-----------------------------------OLD-----------------------------------///
+///-----------------------------------OLD-----------------------------------///
 UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', 'ListUpdateRouter', function (DBURL, ListUpdateRouter) {
     return function (userID, listStatusAndStorage) {
         var listTemplatsURL, listTemplatsRef, now, today, error;
