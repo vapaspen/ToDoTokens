@@ -99,6 +99,42 @@ UserDataServices.factory('FindMostRecentTemplate', ['DBURL', function (DBURL) {
             return 'pass: FetchListTemplatesDone: ' + listStatusAndStorage.FetchListTemplatesDone + ' IsListCurrentDone: ' + listStatusAndStorage.IsListCurrentDone;
         }
 
+        var now, today, currentHour, minHour, iterator, found;
+
+        if (listStatusAndStorage.db.listTemplats.message !== 'No active Templates found.') {
+            now = new Date();
+            today = 'w' + now.getDay();
+
+            currentHour = now.getHours();
+
+            minHour = currentHour - 12;
+
+            if(minHour < 0 ){
+                minHour = 0;
+            }
+
+            for (var key in listStatusAndStorage.db.listTemplats) {
+                iterator = listStatusAndStorage.db.listTemplats[key];
+                if (iterator.daysOfTheWeek[today] === true) {
+                    if (iterator.startHour <= currentHour && iterator.startHour >= minHour) {
+                        if (!found) {
+                            found = iterator;
+                        } else {
+                            if (iterator.startHour > found.startHour) {
+                                found = iterator;
+                            } else {
+                                if (iterator.startHour === found.startHour && iterator.startMin > found.startMin) {
+                                    found = iterator;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+        }
+
 
         //move to next step.
         //UpDateAndArchiveCurrent(userID, listStatusAndStorage)

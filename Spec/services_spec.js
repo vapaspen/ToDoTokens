@@ -309,7 +309,7 @@ describe('All UserDataServices checks: ', function(){
                 mockdata = null;
                 FetchListTemplates('t2', mocklistStatusAndStorage);
 
-                expect(mocklistStatusAndStorage.db.listTemplats).toEqual({});
+                expect(mocklistStatusAndStorage.db.listTemplats.message).toEqual('No active Templates found.');
             });
 
             it('should set listTemplats to empty array if there are not templates found.', function () {
@@ -334,11 +334,10 @@ describe('All UserDataServices checks: ', function(){
         });
 
         describe('FindMostRecentTemplate: ', function(){
-            var FindMostRecentTemplate, mocklistStatusAndStorage, localSpy;
+            var FindMostRecentTemplate, mocklistStatusAndStorage, localSpy, mockNow, mockHours, mockMins;
 
             beforeEach(function () {
                 module('UserDataServices');
-
                 module(function($provide){
                     $provide.value("UpDateAndArchiveCurrent", function(){
                         localSpy = {};
@@ -346,9 +345,17 @@ describe('All UserDataServices checks: ', function(){
                         localSpy.UpDateAndArchiveCurrentisCalledWith = arguments;
                     });
                 });
+
+
             });
 
             beforeEach(function () {
+                mockNow = new Date(2015, 10, 4, 13, 20);
+                mockHours = mockNow.getHours();
+                mockMins = Math.floor(mockNow.getMinutes() / 10) * 10;
+                spyOn(window,"Date").and.returnValue(mockNow);
+                spyOn(window, "alert");
+
                 mocklistStatusAndStorage = {
                     'db':{
                         "current":{},
@@ -376,33 +383,59 @@ describe('All UserDataServices checks: ', function(){
                 expect(typeof FindMostRecentTemplate).toEqual('function');
             });
 
-            it('should pass on running if either FetchListTemplates, or IsListCurrent is not finished', function () {
-                var result
+            describe('Pass Checks. Should not Run until Both perquisites are ready. ', function () {
+                it('should pass on running if FetchListTemplatesDone: false but IsListCurrentDone: true.', function () {
+                    var result
 
-                mocklistStatusAndStorage.FetchListTemplatesDone = false;
-                mocklistStatusAndStorage.IsListCurrentDone = false;
-                result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+                    mocklistStatusAndStorage.FetchListTemplatesDone = false;
+                    mocklistStatusAndStorage.IsListCurrentDone = true;
+                    result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
 
-                expect(result).toEqual('pass: FetchListTemplatesDone: false IsListCurrentDone: false')
+                    expect(result).toEqual('pass: FetchListTemplatesDone: false IsListCurrentDone: true');
 
-                mocklistStatusAndStorage.FetchListTemplatesDone = true;
-                mocklistStatusAndStorage.IsListCurrentDone = false;
-                result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+                });
 
-                expect(result).toEqual('pass: FetchListTemplatesDone: true IsListCurrentDone: false')
+                it('should pass on running if FetchListTemplatesDone: true but IsListCurrentDone: false.', function () {
+                    var result
 
-                mocklistStatusAndStorage.FetchListTemplatesDone = false;
-                mocklistStatusAndStorage.IsListCurrentDone = true;
-                result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+                    mocklistStatusAndStorage.FetchListTemplatesDone = true;
+                    mocklistStatusAndStorage.IsListCurrentDone = false;
+                    result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
 
-                expect(result).toEqual('pass: FetchListTemplatesDone: false IsListCurrentDone: true')
+                    expect(result).toEqual('pass: FetchListTemplatesDone: true IsListCurrentDone: false');
+                });
 
-                mocklistStatusAndStorage.FetchListTemplatesDone = true;
-                mocklistStatusAndStorage.IsListCurrentDone = true;
-                result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+                it('should pass on running if FetchListTemplatesDone: false and IsListCurrentDone: false.', function () {
+                    var result
 
-                expect(result).not.toBeTruthy();
+                    mocklistStatusAndStorage.FetchListTemplatesDone = false;
+                    mocklistStatusAndStorage.IsListCurrentDone = false;
+                    result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+
+                    expect(result).toEqual('pass: FetchListTemplatesDone: false IsListCurrentDone: false');
+                });
+
+                it('should run if FetchListTemplatesDone: true and IsListCurrentDone: true.', function () {
+                    var result
+
+                    mocklistStatusAndStorage = {
+                        db:{
+                            listTemplats:{
+                                message: 'No active Templates found.'
+                            }
+                        }
+                    }
+
+                    mocklistStatusAndStorage.FetchListTemplatesDone = true;
+                    mocklistStatusAndStorage.IsListCurrentDone = true;
+                    result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+
+                    expect(result).toBeFalsy();
+                });
             });
+
+
+
         });
 
 //_________________OLD_-----------------------________-
