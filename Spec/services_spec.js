@@ -155,36 +155,11 @@ describe('All UserDataServices checks: ', function(){
 
             beforeEach(function () {
                 module('UserDataServices');
-                mockfirebaseArrayData = [];
                 module(function($provide){
-                        $provide.service("$firebaseArray", function () {
-                             var fbObject = function (refObj) {
-                                refObj.firebaseArrayisCalled = true;
-                                mockfirebaseArrayData.args = refObj;
-                                return mockfirebaseArrayData;
-                             };
-                            return fbObject;
-                        });
-                    });
-
-
-                module(function($provide){
-                    $provide.service("$firebaseObject", function () {
-                         var fbObject = function (refObj) {
-                            refObj.firebaseObjectisCalled = true;
-                            mockfirebaseObjectData.args = refObj
-                            return mockfirebaseObjectData;
-
-                         };
-                        return fbObject;
-                    });
-                });
-
-                module(function($provide){
-                    $provide.value("ListUpdateRouter", function(){
+                    $provide.value("FindMostRecentTemplate", function(){
                         var refObj = {};
-                        refObj.ListUpdateRouterisCalled = true;
-                        refObj.ListUpdateRouterisCalledWith = arguments;
+                        refObj.FindMostRecentTemplateisCalled = true;
+                        refObj.FindMostRecentTemplateisCalledWith = arguments;
                     });
                 });
             });
@@ -283,8 +258,6 @@ describe('All UserDataServices checks: ', function(){
 
                 //Clear Data after every use.
                 mockdata = {};
-                mockfirebaseArrayData = [];
-                mockfirebaseObjectData = {};
             }));
 
 
@@ -339,7 +312,7 @@ describe('All UserDataServices checks: ', function(){
             beforeEach(function () {
                 module('UserDataServices');
                 module(function($provide){
-                    $provide.value("UpDateAndArchiveCurrent", function(){
+                    $provide.value("UpDateAndArchiveCurrent", function(userID, listStatusAndStorage){
                         localSpy = {};
                         localSpy.UpDateAndArchiveCurrentisCalled = true;
                         localSpy.UpDateAndArchiveCurrentisCalledWith = arguments;
@@ -368,12 +341,9 @@ describe('All UserDataServices checks: ', function(){
 
             beforeEach(inject(function(_FindMostRecentTemplate_){
                 FindMostRecentTemplate =  _FindMostRecentTemplate_;
-                FirebaseReal = Firebase;
-                Firebase = mockFirebase;
             }));
 
             afterEach(inject(function(){
-                Firebase = FirebaseReal;
 
                 //Clear Data after every use.
                 mockdata = {};
@@ -434,10 +404,190 @@ describe('All UserDataServices checks: ', function(){
                 });
             });
 
+            it('should find only the newest list for today, that is not older then 12 hours, and has a start hour no later then the current hour. ', function () {
+                var result;
+                mocklistStatusAndStorage = {
+                        IsListCurrentDone: true,
+                        FetchListTemplatesDone: true,
+                        db:{
+                            listTemplats:{
+                                "n934tbg1d":{
+                                    startHour:mockHours,
+                                    startMin: mockMins,
+                                    daysOfTheWeek:{
+                                            w0:false,
+                                            w1:false,
+                                            w2:false,
+                                            w3:false,
+                                            w4:false,
+                                            w5:false,
+                                            w6:false
+                                    }
+                                },
+                                "b7af6dn3g84":{
+                                    startHour:mockHours - 12,
+                                    startMin: mockMins,
+                                    daysOfTheWeek:{
+                                            w0:true,
+                                            w1:true,
+                                            w2:true,
+                                            w3:true,
+                                            w4:true,
+                                            w5:true,
+                                            w6:true
+                                    }
+                                },
+                                "h7afh62h5j":{
+                                    startHour:mockHours - 5,
+                                    startMin: mockMins,
+                                    daysOfTheWeek:{
+                                            w0:true,
+                                            w1:true,
+                                            w2:true,
+                                            w3:true,
+                                            w4:true,
+                                            w5:true,
+                                            w6:true
+                                    }
+                                },
+                                "h82h1h62h8h0":{
+                                    startHour:mockHours,
+                                    startMin: mockMins - 1,
+                                    daysOfTheWeek:{
+                                            w0:true,
+                                            w1:true,
+                                            w2:true,
+                                            w3:true,
+                                            w4:true,
+                                            w5:true,
+                                            w6:true
+                                    }
+                                },
+                                "n8ayudn3g03":{
+                                    //this is the one that should be found
+                                    startHour:mockHours,
+                                    startMin: mockMins,
+                                    daysOfTheWeek:{
+                                            w0:true,
+                                            w1:true,
+                                            w2:true,
+                                            w3:true,
+                                            w4:true,
+                                            w5:true,
+                                            w6:true
+                                    }
+                                },
+                            }
+                        }
+                    };
+
+                    result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+
+                    expect(mocklistStatusAndStorage.newList.ID).toEqual('n8ayudn3g03');
+                    expect(result).toBeFalsy();
+            });
+
+            it('should set newList as undefined and add a Message to db.listTemplats.message for later use. ', function  () {
+                var result;
+                mocklistStatusAndStorage = {
+                    IsListCurrentDone: true,
+                    FetchListTemplatesDone: true,
+                    db:{
+                        listTemplats:{
+                            "n934tbg1d":{
+                                startHour:mockHours + 1,
+                                startMin: mockMins,
+                                daysOfTheWeek:{
+                                        w0:true,
+                                        w1:true,
+                                        w2:true,
+                                        w3:true,
+                                        w4:true,
+                                        w5:true,
+                                        w6:true
+                                }
+                            },
+                            "3n5n8tbg1d":{
+                                startHour:mockHours - 12,
+                                startMin: mockMins,
+                                daysOfTheWeek:{
+                                        w0:true,
+                                        w1:true,
+                                        w2:true,
+                                        w3:true,
+                                        w4:true,
+                                        w5:true,
+                                        w6:true
+                                }
+                            },
+                        }
+                    }
+                };
 
 
+                result = FindMostRecentTemplate('z1', mocklistStatusAndStorage);
+
+                expect(mocklistStatusAndStorage.newList).toBeFalsy();
+                expect(mocklistStatusAndStorage.db.listTemplats.message).toEqual('No active Templates found.');
+                expect(result).toBeFalsy();
+
+            });
         });
 
+        describe('UpDateAndArchiveCurrent: ', function () {
+            var UpDateAndArchiveCurrent, mocklistStatusAndStorage, localSpy;
+
+            beforeEach(function () {
+                module('UserDataServices');
+            });
+
+            beforeEach(function () {
+            });
+
+
+
+            beforeEach(inject(function(_UpDateAndArchiveCurrent_){
+                UpDateAndArchiveCurrent =  _UpDateAndArchiveCurrent_;
+                FirebaseReal = Firebase;
+                Firebase = mockFirebase;
+            }));
+
+            afterEach(inject(function(){
+                Firebase = FirebaseReal;
+
+                //Clear Data after every use.
+                mockdata = {};
+                mocklistStatusAndStorage = {};
+            }));
+
+            it('should exist and be a function.', function () {
+                expect(typeof UpDateAndArchiveCurrent).toEqual('function');
+            });
+
+            it('should archive the current List before replacing it. ', function () {
+
+            });
+
+            it('should not replace the current template if the newList has the same ID as the Current List and the Current List is not Expired. ', function () {
+
+            });
+
+            it('should replace the Current List if a new one is found with a different ID. ', function () {
+
+            });
+
+            it('should replace the current List if the Current List is expired.', function () {
+
+            });
+
+            it('should replace the current List with an empty list if the Current List is expired but no replacement template is found. ', function () {
+
+            });
+
+        });
+    });
+});
+/*
 //_________________OLD_-----------------------________-
         describe('FetchCurrentListTemplates: ', function () {
             var FetchCurrentListTemplates, mocklistStatusAndStorage, mockNow, mockMins, mockHours, mockedService;
@@ -1152,3 +1302,4 @@ describe('All UserDataServices checks: ', function(){
     });
 });
 
+*/

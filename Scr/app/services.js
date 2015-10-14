@@ -22,7 +22,7 @@ UserDataServices.factory('FetchAUser', ['DBURL', '$firebaseObject', function (DB
 }]);
 
 
-UserDataServices.factory('ListUpdateTrigger', ['IsListCurrent', 'FetchCurrentListTemplates', function (IsListCurrent, FetchCurrentListTemplates) {
+UserDataServices.factory('ListUpdateTrigger', ['IsListCurrent', 'FetchListTemplates', function (IsListCurrent, FetchListTemplates) {
     return function (userID, listStatusAndStorage) {
         listStatusAndStorage = {
             'db':{
@@ -32,13 +32,14 @@ UserDataServices.factory('ListUpdateTrigger', ['IsListCurrent', 'FetchCurrentLis
         };
 
         IsListCurrent(userID, listStatusAndStorage);
-        FetchCurrentListTemplates(userID, listStatusAndStorage);
+        //FetchCurrentListTemplates(userID, listStatusAndStorage);
+        FetchListTemplates(userID, listStatusAndStorage);
         return listStatusAndStorage
     };
 }]);
 
 //function to Check if Current List in Data base is current.
-UserDataServices.factory('IsListCurrent', ['DBURL', 'ListUpdateRouter', function (DBURL, ListUpdateRouter) {
+UserDataServices.factory('IsListCurrent', ['DBURL', 'FindMostRecentTemplate', function (DBURL, FindMostRecentTemplate) {
     return function (userID, listStatusAndStorage) {
         var listURL = DBURL + 'lists/' + userID + '/current';
 
@@ -64,7 +65,7 @@ UserDataServices.factory('IsListCurrent', ['DBURL', 'ListUpdateRouter', function
             listStatusAndStorage.userID = userID;
 
             //move to next step
-            ListUpdateRouter(listStatusAndStorage);
+            FindMostRecentTemplate(listStatusAndStorage);
         });
     };
 }]);
@@ -93,7 +94,7 @@ UserDataServices.factory('FetchListTemplates', ['DBURL', 'FindMostRecentTemplate
     };
 }]);
 
-UserDataServices.factory('FindMostRecentTemplate', ['DBURL', function (DBURL) {
+UserDataServices.factory('FindMostRecentTemplate', ['UpDateAndArchiveCurrent', function (UpDateAndArchiveCurrent) {
     return function (userID, listStatusAndStorage) {
         if (!listStatusAndStorage.FetchListTemplatesDone || !listStatusAndStorage.IsListCurrentDone) {
             return 'pass: FetchListTemplatesDone: ' + listStatusAndStorage.FetchListTemplatesDone + ' IsListCurrentDone: ' + listStatusAndStorage.IsListCurrentDone;
@@ -107,11 +108,13 @@ UserDataServices.factory('FindMostRecentTemplate', ['DBURL', function (DBURL) {
 
             currentHour = now.getHours();
 
-            minHour = currentHour - 12;
+            minHour = currentHour - 11;
 
             if(minHour < 0 ){
                 minHour = 0;
             }
+
+            listStatusAndStorage.newList = {};
 
             for (var key in listStatusAndStorage.db.listTemplats) {
                 iterator = listStatusAndStorage.db.listTemplats[key];
@@ -119,12 +122,15 @@ UserDataServices.factory('FindMostRecentTemplate', ['DBURL', function (DBURL) {
                     if (iterator.startHour <= currentHour && iterator.startHour >= minHour) {
                         if (!found) {
                             found = iterator;
+                            found.ID = key;
                         } else {
                             if (iterator.startHour > found.startHour) {
                                 found = iterator;
+                                found.ID = key;
                             } else {
                                 if (iterator.startHour === found.startHour && iterator.startMin > found.startMin) {
                                     found = iterator;
+                                    found.ID = key;
                                 }
                             }
                         }
@@ -132,15 +138,25 @@ UserDataServices.factory('FindMostRecentTemplate', ['DBURL', function (DBURL) {
                 }
             }
 
+            listStatusAndStorage.newList = found;
 
+            if (!listStatusAndStorage.newList) {
+                listStatusAndStorage.db.listTemplats.message = 'No active Templates found.';
+            }
         }
 
 
         //move to next step.
-        //UpDateAndArchiveCurrent(userID, listStatusAndStorage)
+        UpDateAndArchiveCurrent(userID, listStatusAndStorage);
     };
 }]);
 
+UserDataServices.factory('UpDateAndArchiveCurrent', ['DBURL', function (DBURL) {
+    return function (userID, listStatusAndStorage) {
+
+    };
+}]);
+/*
 
 ///-----------------------------------OLD-----------------------------------///
 ///-----------------------------------OLD-----------------------------------///
@@ -343,7 +359,7 @@ UserDataServices.factory('updateCurrentList', ['DBURL', function (DBURL) {
     };
 }]);
 
-
+*/
 
 //Local Function used to send updates to the DB as its being Made.
 UserDataServices.factory('ManualDbUpdate', ['DBURL', function (DBURL) {
