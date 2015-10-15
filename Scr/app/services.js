@@ -65,7 +65,7 @@ UserDataServices.factory('IsListCurrent', ['DBURL', 'FindMostRecentTemplate', fu
             listStatusAndStorage.userID = userID;
 
             //move to next step
-            FindMostRecentTemplate(listStatusAndStorage);
+            FindMostRecentTemplate(userID, listStatusAndStorage);
         });
     };
 }]);
@@ -142,6 +142,9 @@ UserDataServices.factory('FindMostRecentTemplate', ['UpDateAndArchiveCurrent', f
 
             if (!listStatusAndStorage.newList) {
                 listStatusAndStorage.db.listTemplats.message = 'No active Templates found.';
+                listStatusAndStorage.newList = {
+                    "ID":"empty"
+                }
             }
         }
 
@@ -153,213 +156,29 @@ UserDataServices.factory('FindMostRecentTemplate', ['UpDateAndArchiveCurrent', f
 
 UserDataServices.factory('UpDateAndArchiveCurrent', ['DBURL', function (DBURL) {
     return function (userID, listStatusAndStorage) {
+        var processUpdate, archiveURL, archiveRef, currentURL, currentRef;
 
-    };
-}]);
-/*
-
-///-----------------------------------OLD-----------------------------------///
-///-----------------------------------OLD-----------------------------------///
-///-----------------------------------OLD-----------------------------------///
-UserDataServices.factory('FetchCurrentListTemplates', ['DBURL', 'ListUpdateRouter', function (DBURL, ListUpdateRouter) {
-    return function (userID, listStatusAndStorage) {
-        var listTemplatsURL, listTemplatsRef, now, today, error;
-
-        listStatusAndStorage.FetchCurrentListTemplatesDone = false;
-
-        now = new Date();
-        today = 'w' + now.getDay();
-        listStatusAndStorage.listTemplats = [];
-
-        listTemplatsURL = DBURL + 'lists/' + userID + '/listtemplats';
-
-        listTemplatsRef = new Firebase(listTemplatsURL);
-
-        listTemplatsRef.orderByChild('isActive').equalTo(true).once('value', function (snap) {
-
-            var key, iterator, floorMin, foundList;
-            listStatusAndStorage.listTemplats.error = {};
-            //if nothing was active return error
-            if (!snap.val()) {
-                alert('No Active List Templates found for user: ' + userID)
-                listStatusAndStorage.listTemplats.error.message = 'No Active List Templates found for user: ' + userID;
-            } else {
-
-                floorMin = Math.floor(now.getMinutes() / 10) * 10;
-
-                for (key in snap.val()) {
-                    iterator = snap.val()[key];
-                    if (iterator.daysOfTheWeek[today] === true) {
-                        if (iterator.startHour === now.getHours()) {
-                            if (floorMin === iterator.startMin) {
-                                foundList = iterator;
-                                foundList.ID = key;
-                                listStatusAndStorage.listTemplats.push(foundList);
-                            } else {
-
-                                listStatusAndStorage.listTemplats.message = 'Failed at Minuets.';
-                            }
-
-                        } else {
-                            listStatusAndStorage.listTemplats.message = 'Failed at Hours.';
-                        }
-                    } else {
-                       listStatusAndStorage.listTemplats.message = 'Failed at DayOftheWeek.';
-                    }
-                }
-                listStatusAndStorage.FetchCurrentListTemplatesDone = true;
-                listStatusAndStorage.userID = userID;
-                ListUpdateRouter(listStatusAndStorage);
-            }
-        });
-    };
-}]);
-
-//takes a listStatusAndStorage Object. Assumes the listTemplats is undefined until it is done Processing
-UserDataServices.factory('ListUpdateRouter', ['updateCurrentList', 'FindNewCurrentListFromRecent', function (updateCurrentList, FindNewCurrentListFromRecent) {
-    return function (listStatusAndStorage) {
-
-        if (listStatusAndStorage.FetchCurrentListTemplatesDone) {
-            if (listStatusAndStorage.IsListCurrentDone) {
-                if (listStatusAndStorage.db.current !== null && listStatusAndStorage.db.current !== {}) {
-                    if (listStatusAndStorage.db.isUpToDate === true) {
-                        if (listStatusAndStorage.listTemplats.length > 0) {
-                            for (var i = 0; i < listStatusAndStorage.listTemplats.length; i++) {
-                                if (listStatusAndStorage.listTemplats[i].ID == listStatusAndStorage.db.current.ID) {
-                                    alert('Test')
-                                    return 'Database list is current';
-                                }
-                            }
-                        }
-                    }
-
-            }
-                //alert(statusTest)
-            if (listStatusAndStorage.listTemplats.length > 0) {
-                updateCurrentList(listStatusAndStorage);
-                return 'updateCurrentList >> isUpToDate:' + listStatusAndStorage.db.isUpToDate;
-            }
-
-            FindNewCurrentListFromRecent(listStatusAndStorage);
-            return 'FindNewCurrentListFromRecent >> isUpToDate:' + listStatusAndStorage.db.isUpToDate;
-            }
-            return 'listStatusAndStorage.IsListCurrentDone: ' + listStatusAndStorage.IsListCurrentDone;
+        processUpdate = false;
+        if (!listStatusAndStorage.db.isUpToDate || listStatusAndStorage.db.current.ID !== listStatusAndStorage.newList.ID) {
+            processUpdate = true;
         }
-        return 'listStatusAndStorage.FetchCurrentListTemplatesDone: ' + listStatusAndStorage.FetchCurrentListTemplatesDone;
-    };
-}]);
-
-UserDataServices.factory('FindNewCurrentListFromRecent', ['DBURL', 'updateCurrentList', function(DBURL, updateCurrentList){
-    return function (listStatusAndStorage) {
-        var templatesURL, templatesRef, foundTemplate, userID;
-
-        userID = listStatusAndStorage.userID
-
-        templatesURL = DBURL + 'lists/' + userID + '/listtemplats';
 
 
-        templatesRef = new Firebase(templatesURL);
-
-        templatesRef.orderByChild('isActive').equalTo(true).once('value', function (snap) {
-            var key, iterator, floorMin, foundList, currentHour, minHour, now, today;
-            listStatusAndStorage.listTemplats.error = {};
-            //if nothing was active return error
-            if (!snap.val()) {
-                alert('No Active List Templates found for user: ' + userID)
-                listStatusAndStorage.listTemplats.error.message = 'No Active List Templates found for user: ' + userID;
-                return
+        if (processUpdate) {
+            if (listStatusAndStorage.db.current.ID !== 'empty') {
+                archiveURL = DBURL + 'lists/' + userID + '/archivedlists/';
+                archiveRef = new Firebase(archiveURL);
+                archiveRef.push(listStatusAndStorage.db.current);
             }
 
+            currentURL = DBURL + 'lists/' + userID + '/current';
+            currentRef = new Firebase(currentURL);
+            listStatusAndStorage.newList.createdOn = new Date().getTime()
+            currentRef.set(listStatusAndStorage.newList)
 
-                now = new Date();
-                today = 'w' + now.getDay();
-
-                currentHour = now.getHours();
-
-                minHour = currentHour - 12;
-
-                if(minHour < 0 ){
-                    minHour = 0;
-                }
-
-
-                for (key in snap.val()) {
-                    iterator = snap.val()[key];
-                    if (iterator.daysOfTheWeek[today] === true) {
-                        if (iterator.startHour <= currentHour && iterator.startHour >= minHour) {
-                            if (!foundList) {
-                                listStatusAndStorage.listTemplats.message = 'Found first with key: ' + key;
-                                foundList = iterator;
-                                foundList.ID = key;
-                            } else {
-
-                                if (iterator.startHour === foundList.startHour) {
-                                    if (iterator.startMin > foundList.startMin) {
-                                        listStatusAndStorage.listTemplats.message = 'Found Next by minutes: key: ' + key;
-                                        foundList = iterator;
-                                        foundList.ID = key;
-                                    } else {
-                                        listStatusAndStorage.listTemplats.message = 'Passed at greater then mins at key: ' + key;
-                                    }
-
-                                } else {
-                                    if (iterator.startHour > foundList.startHour) {
-                                        listStatusAndStorage.listTemplats.message = 'Found Next by hours: key: ' + key;
-                                        foundList = iterator;
-                                        foundList.ID = key;
-                                    } else {
-                                        listStatusAndStorage.listTemplats.message = 'Passed at greater then Hours at key: ' + key;
-                                    }
-                                }
-                            }
-                        } else {
-                            listStatusAndStorage.listTemplats.message = 'Passed on Hours between at: ' + key;
-                        }
-                    } else {
-                       listStatusAndStorage.listTemplats.message = 'Passed on DayOfTheWeek at: ' + key;
-                       //listStatusAndStorage.listTemplats.error.message = 'No Templates found for user: ' + userID + ' for Today.';
-                    }
-                }
-
-            if (!foundList) {
-                alert('No Templates found Message: ' + listStatusAndStorage.listTemplats.message);
-                listStatusAndStorage.listTemplats.error.message = 'No Templates found for user: ' + userID;
-
-
-                return
-            }
-            listStatusAndStorage.listTemplats.push(foundList);
-            updateCurrentList(listStatusAndStorage);
-
-        });
+        }
     };
 }]);
-
-
-UserDataServices.factory('updateCurrentList', ['DBURL', function (DBURL) {
-    return function (listStatusAndStorage) {
-        var userID, currentURL, currentRef, now;
-
-        now = new Date().getTime();
-
-        listStatusAndStorage.listTemplats[0].createdOn = now;
-
-        userID = listStatusAndStorage.userID
-
-        currentURL = DBURL + 'lists/' + userID + '/current';
-
-        currentRef = new Firebase(currentURL);
-
-        currentRef.set(listStatusAndStorage.listTemplats[0]);
-
-        //stub to prove this was called
-        //alert('updateCurrentList \n\n listStatusAndStorage.IsListCurrentDone: ' + listStatusAndStorage.IsListCurrentDone +'\n\n listStatusAndStorage.FetchCurrentListTemplatesDone: ' + listStatusAndStorage.FetchCurrentListTemplatesDone);
-        alert(listStatusAndStorage.listTemplats[0].ID)
-        return listStatusAndStorage.updateCurrentList = 'I was called';
-    };
-}]);
-
-*/
 
 //Local Function used to send updates to the DB as its being Made.
 UserDataServices.factory('ManualDbUpdate', ['DBURL', function (DBURL) {
