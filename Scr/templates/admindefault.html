@@ -8,5 +8,14 @@
     <div class="page-header">
         <h1><a href="#admin">To Do Tokens</a> <small><a href="#/">Return to User Home</a></small></h1>
     </div>
+    <div class="container-fluid">
+        <div class="row">
+            <ul class="unstyled">
+                <li ng-repeat="user in userList">
+                    <a href="#adminList/{{user.ID}}">{{user.firstname}}</a>
+                </li>
+              </ul>
+        </div>
+    </div>
 </body>
 </html>
