@@ -8,6 +8,17 @@
         <h1><a href="#/">To Do Tokens</a> <small>{{data["0"].firstname}}'s List</small> <small class="listPage_tokenDisplay">Total Tokens: {{data["0"].tokens}}</small></h1>
     </div>
     <div>
-        {{userList.ID || 'There is No lists to display at this time. '}}
+        <div ng-if="userList.ID == 'empty'">
+            No Current List Items
+        </div>
+        <div ng-if="userList.ID != 'empty'">
+
+            <ul class="unstyled">
+                <li ng-repeat="item in userList.items">
+                    <input type="checkbox" ng-model="item.status">
+                    <span>{{item.label}} </span>
+                </li>
+              </ul>
+        </div>
     </div>
 </body>

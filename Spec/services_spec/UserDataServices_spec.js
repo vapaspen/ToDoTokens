@@ -136,7 +136,7 @@ describe('All UserDataServices checks: ', function(){
             });
         });
 
-        describe('FetchAUser: ', function(){
+        describe('FetchAUser: ', function () {
             var FetchAUser;
 
             beforeEach(inject(function(_FetchAUser_){
@@ -152,6 +152,18 @@ describe('All UserDataServices checks: ', function(){
 
                 expect(refSpy.orderByChildisCalled).toBeTruthy();
                 expect(refSpy.equalToisCalledWith).toEqual("z1");
+            });
+        });
+
+        describe('FetchList: ', function () {
+            var FetchList;
+
+            beforeEach(inject(function(_FetchList_){
+                FetchList =  _FetchList_;
+            }));
+
+            it('should exist and be a function.', function(){
+                expect(typeof FetchList).toEqual('function')
             });
         });
     });

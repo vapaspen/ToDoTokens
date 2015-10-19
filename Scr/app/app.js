@@ -12,6 +12,10 @@ var app = angular.module('app',['ngAria','ngRoute', 'ngAnimate','ngSanitize','mg
             templateUrl : 'templates/activeList.html',
             controller : 'ListCtrl'
         })
+        .when('/admin', {
+            templateUrl : 'templates/admindefault.html',
+            controller : 'AdminHomeCtrl'
+        })
         .otherwise({
             redirectTo: '/'
         });

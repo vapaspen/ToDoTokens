@@ -4,11 +4,11 @@ var UserDataServices = angular.module('UserDataServices', ['firebase']);
 
 UserDataServices.constant('DBURL', 'https://todotokens.firebaseio.com/');
 
-UserDataServices.factory('FetchUsers', ['DBURL', '$firebaseArray', function (DBURL, $firebaseArray) {
+UserDataServices.factory('FetchUsers', ['DBURL', '$firebaseObject', function (DBURL, $firebaseObject) {
     return function () {
         var userRef = DBURL + 'users';
         var fireRef = new Firebase(userRef);
-        return $firebaseArray(fireRef);
+        return $firebaseObject(fireRef);
     };
 }]);
 
@@ -21,20 +21,45 @@ UserDataServices.factory('FetchAUser', ['DBURL', '$firebaseObject', function (DB
     };
 }]);
 
+UserDataServices.factory('FetchList', ['DBURL', '$firebaseObject', function (DBURL, $firebaseObject) {
+    return function (scope, userID) {
+        var currentListRef, currentListURL, syncObject;
 
-UserDataServices.factory('ListUpdateTrigger', ['IsListCurrent', 'FetchListTemplates', function (IsListCurrent, FetchListTemplates) {
+        currentListURL = DBURL + 'lists/' + userID + '/current';
+        currentListRef = new Firebase(currentListURL);
+        syncObject = $firebaseObject(currentListRef);
+        syncObject.$bindTo(scope, "userList")
+    };
+}]);
+
+UserDataServices.factory('ListUpdateTrigger', ['IsListCurrent', 'FetchListTemplates', '$timeout', function (IsListCurrent, FetchListTemplates, $timeout) {
     return function (userID, listStatusAndStorage) {
-        listStatusAndStorage = {
-            'db':{
-                "current":{},
-                "isUpToDate":true
-            }
+        var local;
+
+        local = {};
+
+        local.startUpdate = function () {
+            listStatusAndStorage = {
+                db:{
+                    current:{},
+                    isUpToDate:true
+                }
+            };
+
+            IsListCurrent(userID, listStatusAndStorage);
+            FetchListTemplates(userID, listStatusAndStorage);
+            local.triggerNext();
+            return listStatusAndStorage
         };
 
-        IsListCurrent(userID, listStatusAndStorage);
-        //FetchCurrentListTemplates(userID, listStatusAndStorage);
-        FetchListTemplates(userID, listStatusAndStorage);
-        return listStatusAndStorage
+
+        local.triggerNext = function () {
+            $timeout(function (userID, listStatusAndStorage) {
+            local.startUpdate();
+            }, 10000);
+        };
+
+        return local.startUpdate();
     };
 }]);
 
@@ -121,6 +146,7 @@ UserDataServices.factory('FindMostRecentTemplate', ['UpDateAndArchiveCurrent', f
                 if (iterator.daysOfTheWeek[today] === true) {
                     if (iterator.startHour <= currentHour && iterator.startHour >= minHour) {
                         if (!found) {
+
                             found = iterator;
                             found.ID = key;
                         } else {
@@ -157,7 +183,6 @@ UserDataServices.factory('FindMostRecentTemplate', ['UpDateAndArchiveCurrent', f
 UserDataServices.factory('UpDateAndArchiveCurrent', ['DBURL', function (DBURL) {
     return function (userID, listStatusAndStorage) {
         var processUpdate, archiveURL, archiveRef, currentURL, currentRef;
-
         processUpdate = false;
         if (!listStatusAndStorage.db.isUpToDate || listStatusAndStorage.db.current.ID !== listStatusAndStorage.newList.ID) {
             processUpdate = true;
@@ -166,7 +191,7 @@ UserDataServices.factory('UpDateAndArchiveCurrent', ['DBURL', function (DBURL) {
 
         if (processUpdate) {
             if (listStatusAndStorage.db.current.ID !== 'empty') {
-                archiveURL = DBURL + 'lists/' + userID + '/archivedlists/';
+                archiveURL = DBURL + 'lists/' + userID + '/pendinglists/';
                 archiveRef = new Firebase(archiveURL);
                 archiveRef.push(listStatusAndStorage.db.current);
             }
@@ -182,7 +207,7 @@ UserDataServices.factory('UpDateAndArchiveCurrent', ['DBURL', function (DBURL) {
 
 //Local Function used to send updates to the DB as its being Made.
 UserDataServices.factory('ManualDbUpdate', ['DBURL', function (DBURL) {
-    return function(userID){
+    return function(userID, templateID){
         if(!userID){
             alert("ManualDbUpdate not given an ID");
             return false;
@@ -192,59 +217,33 @@ UserDataServices.factory('ManualDbUpdate', ['DBURL', function (DBURL) {
         var pastTime = new Date(2015, 8, 26, 18, 30);
         var now = atime.getTime();
 
-        var listTemplatsURL = DBURL + '/lists/' + userID;
+        var listTemplatsURL = DBURL + '/lists/' + userID + '/listtemplats/' + templateID;
 
         var listRef = new Firebase(listTemplatsURL);
         listRef.set({
-                current:{
-                    ID:"n934tbg1d",
-                    createdOn: 1443123299604,
-                    isActive:true,
-                    daysOfTheWeek:{
-                        w0:false,
-                        w1:true,
-                        w2:true,
-                        w3:true,
-                        w4:true,
-                        w5:true,
-                        w6:false
-                    },
-                    startHour:13,
-                    startMin:40
+            "items": {
+                "nouij5f4":{
+                    "label":"Eat Breakfeast",
+                    "status":false
                 },
-                listtemplats:{
-                    "n934tbg1d":{
-                        createdOn: 1443123299604,
-                        isActive:false,
-                        daysOfTheWeek:{
-                            w0:false,
-                            w1:true,
-                            w2:true,
-                            w3:true,
-                            w4:true,
-                            w5:true,
-                            w6:false
-                        },
-                        startHour:4,
-                        startMin:10
-                    },
-
-                    "dibaco39g02":{
-                        createdOn: now,
-                        isActive:true,
-                        daysOfTheWeek:{
-                            w0:false,
-                            w1:true,
-                            w2:true,
-                            w3:true,
-                            w4:true,
-                            w5:true,
-                            w6:false
-                        },
-                        startHour:4,
-                        startMin:10
-                    }
+                "abgouh":{
+                    "label":"Get Dressed",
+                    "status":false
                 }
+            },
+            isActive:true,
+            daysOfTheWeek:{
+                w0:true,
+                w1:true,
+                w2:true,
+                w3:true,
+                w4:true,
+                w5:true,
+                w6:true,
+            },
+            startHour:14,
+            startMin:10
+
         });
     }
 }]);
@@ -253,35 +252,30 @@ UserDataServices.factory('ManualDbUpdate', ['DBURL', function (DBURL) {
 
 /*
 
-    "n934tbg1d":{
-                    createdOn: 1443123299604,
-                    isActive:true,
-                    daysOfTheWeek:{
-                        0:false,
-                        1:true,
-                        3:true,
-                        4:true,
-                        5:true,
-                        6:true,
-                        7:false
-                    },
-                    startHour:4,
-                    startMin:10
-                },
 
     "dibaco39g02":{
                     createdOn: now,
-                    isActive:false,
-                    daysOfTheWeek:{
-                        0:false,
-                        1:true,
-                        3:true,
-                        4:true,
-                        5:true,
-                        6:true,
-                        7:false
+                    "items": {
+                        "nouij5f4":{
+                            "label":"Eat Breakfeast",
+                            "status":false
+                        },
+                        "abgouh":{
+                            "label":"Get Dressed",
+                            "status":false
+                        }
                     },
-                    startHour:4,
+                    isActive:true,
+                    daysOfTheWeek:{
+                        w0:true,
+                        w1:true,
+                        w2:true,
+                        w3:true,
+                        w4:true,
+                        w5:true,
+                        w6:true,
+                    },
+                    startHour:14,
                     startMin:10
                 }
 

@@ -40,7 +40,7 @@ describe('App routing checks: ', function(){
             $location.path('/list/1');
             $rootScope.$digest();
 
-        }))
+        }));
 
         it('should have a route to a users List page with a controller.', function(){
 
@@ -54,6 +54,18 @@ describe('App routing checks: ', function(){
         it('should have rout User ID parameter. ', function(){
             var routeParams = route.current.params
             expect(routeParams.userID).toEqual('1');
+        });
+
+    });
+
+    describe('Admin routes: ', function () {
+        beforeEach(inject(function(){
+            $location.path('/admin');
+            $rootScope.$digest();
+        }));
+
+        it('should have a route to the Admin default Page', function () {
+
         });
 
     });
