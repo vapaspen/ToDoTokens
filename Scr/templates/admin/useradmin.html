@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin portal for {{data.firstname}}"</title>
+</head>
+<body>
+    <div class="page-header">
+        <h1><a href="#/">To Do Tokens</a> <small><a href="#admin" ><span class="glyphicon glyphicon-home"></span></a> Admin portal for {{data.firstname}}</small></h1>
+    </div>
+    <div class="tabbable tabs-top">
+        <ul class="nav nav-tabs" ng-init="main.active.tab = 'info'">
+            <li ng-class="{active: main.active.tab == 'info'">
+                <a ng-click="main.active.tab = 'info'">User Info</a>
+            </li>
+            <li ng-class="{active: main.active.tab == 'templates'">
+                <a ng-click="main.active.tab = 'templates'">Templates</a>
+            </li>
+            <li ng-class="{active: main.active.tab == 'history'">
+                <a ng-click="main.active.tab = 'history'">History</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div ng-switch="main.active.tab">
+                <div ng-switch-when='info'>
+                    <div ng-include='"templates/admin/tabs/useradmin_tab_info.html"'></div>
+                </div>
+
+                <div ng-switch-when="templates">
+                    <div ng-include='"templates/admin/tabs/useradmin_tab_templates.html"'></div>
+                </div>
+                <div ng-switch-when="history">
+                    <div ng-include='"templates/admin/tabs/useradmin_tab_history.html"'></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

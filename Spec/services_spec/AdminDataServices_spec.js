@@ -57,6 +57,12 @@ describe('All AdminDataServices checks: ', function(){
             return refObj;
         };
         //--------------Mock DataBase elements---------------//
+    });
 
+    describe('Single depth services: ', function () {
+        describe('FetchAUsersListData', function () {
+
+
+        });
     });
 });

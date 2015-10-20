@@ -1,0 +1,21 @@
+<h4> Current total tokens: {{data.tokens}}</h4>
+<br>
+
+<h4> Current Pending Lists: </h4>
+<div ng-if="list.pendinglists === undefined ">
+            No Current List Items
+</div>
+<div ng-if="list.pendinglists !== undefined">
+
+    <ul class="unstyled">
+        <li ng-repeat="aList in list.pendinglists">
+            Date Created: {{aList.createdOn}}
+            <ul class="unstyled">
+                <li ng-repeat="item in aList.items">
+                    <input type="checkbox" ng-model="item.status">
+                    <span>{{item.label}} </span>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>

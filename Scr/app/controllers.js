@@ -8,17 +8,25 @@ app.controller('HomeCtrl', ['ManualDbUpdate', '$scope', 'FetchUsers',   function
 }]);
 
 //Controller for List Page. Used to manage User List page Display
-app.controller('ListCtrl', ['$scope','$routeParams','FetchAUser', 'ListUpdateTrigger', 'FetchList', function($scope, $routeParams, FetchAUser, ListUpdateTrigger, FetchList){
+app.controller('ListCtrl', ['$scope','$routeParams','FetchAUser', 'ListUpdateTrigger', 'FetchCurrentList', function($scope, $routeParams, FetchAUser, ListUpdateTrigger, FetchCurrentList){
 
     $scope.data = FetchAUser($routeParams.userID);
     $scope.title = "Users's List";
     $scope.firstName = 'Users';
     ListUpdateTrigger($routeParams.userID, $scope.listStatusAndStorage);
-    FetchList($scope, $routeParams.userID);
+    FetchCurrentList($scope, $routeParams.userID);
 
 }]);
 
 //admin Home Controller
 app.controller('AdminHomeCtrl', ['$scope', 'FetchUsers', function ($scope, FetchUsers) {
     $scope.userList = FetchUsers();
+}]);
+
+
+app.controller('UserAdminCtrl', ['$scope','$routeParams','FetchAUser', 'FetchAUsersListData', function($scope, $routeParams, FetchAUser, FetchAUsersListData){
+
+    $scope.data = FetchAUser($routeParams.userID);
+    FetchAUsersListData($scope, $routeParams.userID)
+
 }]);

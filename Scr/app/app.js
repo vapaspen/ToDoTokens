@@ -1,7 +1,7 @@
 'use strict';
 
 //main App initializer
-var app = angular.module('app',['ngAria','ngRoute', 'ngAnimate','ngSanitize','mgcrea.ngStrap', 'UserDataServices'])
+var app = angular.module('app',['ngAria','ngRoute', 'ngAnimate','ngSanitize','mgcrea.ngStrap', 'UserDataServices', 'AdminDataServices'])
     .config(['$routeProvider', function($routeProvider) {
     $routeProvider
         .when('/', {
@@ -13,8 +13,12 @@ var app = angular.module('app',['ngAria','ngRoute', 'ngAnimate','ngSanitize','mg
             controller : 'ListCtrl'
         })
         .when('/admin', {
-            templateUrl : 'templates/admindefault.html',
+            templateUrl : 'templates/admin/admindefault.html',
             controller : 'AdminHomeCtrl'
+        })
+        .when('/useradmin/:userID', {
+            templateUrl : 'templates/admin/useradmin.html',
+            controller : 'UserAdminCtrl'
         })
         .otherwise({
             redirectTo: '/'

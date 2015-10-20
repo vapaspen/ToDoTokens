@@ -15,20 +15,20 @@ UserDataServices.factory('FetchUsers', ['DBURL', '$firebaseObject', function (DB
 
 UserDataServices.factory('FetchAUser', ['DBURL', '$firebaseObject', function (DBURL, $firebaseObject) {
     return function (ID) {
-        var userRef = DBURL + 'users';
-        var fireRef = new Firebase(userRef).orderByChild("ID").equalTo(ID).limitToFirst(1);
+        var userRef = DBURL + 'users/' + ID;
+        var fireRef = new Firebase(userRef);
         return $firebaseObject(fireRef);
     };
 }]);
 
-UserDataServices.factory('FetchList', ['DBURL', '$firebaseObject', function (DBURL, $firebaseObject) {
+UserDataServices.factory('FetchCurrentList', ['DBURL', '$firebaseObject', function (DBURL, $firebaseObject) {
     return function (scope, userID) {
         var currentListRef, currentListURL, syncObject;
 
         currentListURL = DBURL + 'lists/' + userID + '/current';
         currentListRef = new Firebase(currentListURL);
         syncObject = $firebaseObject(currentListRef);
-        syncObject.$bindTo(scope, "userList")
+        syncObject.$bindTo(scope, "userList");
     };
 }]);
 

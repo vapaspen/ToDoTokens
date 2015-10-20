@@ -128,11 +128,11 @@ describe('All UserDataServices checks: ', function(){
                 expect(typeof FetchUsers).toEqual('function');
             });
 
-            it('should call Firebase and $firebaseArray.', function () {
+            it('should call Firebase and $firebaseObject.', function () {
                 mockfirebaseArrayData = [{"key":'value'}, {"key":'value'}];
                 var results = FetchUsers();
                 expect(refSpy.FirebaseisCalled).toBeTruthy();
-                expect(results.args.firebaseArrayisCalled).toEqual(true);
+                expect(results.args.firebaseObjectisCalled).toEqual(true);
             });
         });
 
@@ -147,23 +147,22 @@ describe('All UserDataServices checks: ', function(){
                 expect(typeof FetchAUser).toEqual('function')
             });
 
-            it('should call orderByChild and equalTo with a given ID.', function(){
+            it('should call firebaseObject.', function(){
                 var results = FetchAUser("z1")
 
-                expect(refSpy.orderByChildisCalled).toBeTruthy();
-                expect(refSpy.equalToisCalledWith).toEqual("z1");
+                expect(refSpy.firebaseObjectisCalled).toBeTruthy();
             });
         });
 
-        describe('FetchList: ', function () {
-            var FetchList;
+        describe('FetchCurrentList: ', function () {
+            var FetchCurrentList;
 
-            beforeEach(inject(function(_FetchList_){
-                FetchList =  _FetchList_;
+            beforeEach(inject(function(_FetchCurrentList_){
+                FetchCurrentList =  _FetchCurrentList_;
             }));
 
             it('should exist and be a function.', function(){
-                expect(typeof FetchList).toEqual('function')
+                expect(typeof FetchCurrentList).toEqual('function')
             });
         });
     });

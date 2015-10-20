@@ -58,14 +58,28 @@ describe('App routing checks: ', function(){
 
     });
 
-    describe('Admin routes: ', function () {
+    describe('Admin default routes: ', function () {
         beforeEach(inject(function(){
             $location.path('/admin');
             $rootScope.$digest();
         }));
 
         it('should have a route to the Admin default Page', function () {
+            expect(route.current.templateUrl).toEqual('templates/admin/admindefault.html');
+            expect(route.current.controller).toBe('AdminHomeCtrl');
+        });
 
+    });
+
+    describe('User admin routes: ', function () {
+        beforeEach(inject(function(){
+            $location.path('/useradmin/z1');
+            $rootScope.$digest();
+        }));
+
+        it('should have a route to the Admin default Page', function () {
+            expect(route.current.templateUrl).toEqual('templates/admin/useradmin.html');
+            expect(route.current.controller).toBe('UserAdminCtrl');
         });
 
     });
