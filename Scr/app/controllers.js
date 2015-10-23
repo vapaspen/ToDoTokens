@@ -24,9 +24,29 @@ app.controller('AdminHomeCtrl', ['$scope', 'FetchUsers', function ($scope, Fetch
 }]);
 
 
-app.controller('UserAdminCtrl', ['$scope','$routeParams','FetchAUser', 'FetchAUsersListData', function($scope, $routeParams, FetchAUser, FetchAUsersListData){
+app.controller('UserAdminCtrl', ['$scope','$routeParams','FetchAUser', 'FetchAUsersListData', 'UpdateCurrentListTotalTokens',  function($scope, $routeParams, FetchAUser, FetchAUsersListData, UpdateCurrentListTotalTokens){
 
     $scope.data = FetchAUser($routeParams.userID);
-    FetchAUsersListData($scope, $routeParams.userID)
+    FetchAUsersListData($scope, $routeParams.userID);
+    $scope.newTotal = {};
+
+    $scope.localTime = function (utcTime) {
+        var dateTime, displayString;
+
+        dateTime = new Date(utcTime);
+
+        displayString = dateTime.getDate() + '/' + dateTime.getMonth() + '/' + dateTime.getFullYear() + '  at: ' + dateTime.getHours() + ':' + dateTime.getMinutes();
+
+        return displayString
+    }
+
+
+    $scope.updateTotal = function (list, testValue, isNotInit ) {
+
+        UpdateCurrentListTotalTokens(list, testValue, isNotInit);
+        UpdateCurrentListTotalTokens($scope.newTotal, testValue, isNotInit);
+
+    }
+
 
 }]);

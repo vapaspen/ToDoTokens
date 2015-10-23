@@ -14,3 +14,9 @@ AdminDataServices.factory('FetchAUsersListData', ['DBURL', '$firebaseObject', fu
         syncObject.$bindTo(scope, "list");
     };
 }]);
+
+AdminDataServices.factory('ArchivePendingLists', ['DBURL', function (DBURL) {
+    return function (userID, list) {
+
+    };
+}]);

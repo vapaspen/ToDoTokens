@@ -4,6 +4,21 @@ var UserDataServices = angular.module('UserDataServices', ['firebase']);
 
 UserDataServices.constant('DBURL', 'https://todotokens.firebaseio.com/');
 
+UserDataServices.factory('UpdateCurrentListTotalTokens', [function () {
+    return function (bindObj, testValue, isNotInit) {
+        if (!bindObj.listtokens) {
+            bindObj.listtokens = 0;
+        }
+        if (testValue) {
+            bindObj.listtokens += 1
+        } else {
+            if (isNotInit) {
+                bindObj.listtokens -= 1
+            }
+        }
+    };
+}]);
+
 UserDataServices.factory('FetchUsers', ['DBURL', '$firebaseObject', function (DBURL, $firebaseObject) {
     return function () {
         var userRef = DBURL + 'users';

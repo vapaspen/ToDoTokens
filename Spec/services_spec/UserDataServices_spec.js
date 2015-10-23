@@ -170,6 +170,22 @@ describe('All UserDataServices checks: ', function(){
 
     //--------------Mid Point Services -------------------//
     describe('UserDataServices checks on none root services:', function(){
+        describe('UpdateCurrentListTotalTokens: ', function () {
+            var UpdateCurrentListTotalTokens;
+
+            beforeEach(function () {
+                module('UserDataServices');
+            });
+
+            beforeEach(inject(function(_UpdateCurrentListTotalTokens_){
+                UpdateCurrentListTotalTokens =  _UpdateCurrentListTotalTokens_;
+            }));
+
+            it('should exist and be a function.', function(){
+                expect(typeof UpdateCurrentListTotalTokens).toEqual('function')
+            });
+        });
+
         describe('IsListCurrent: ', function(){
             var IsListCurrent, mocklistStatusAndStorage;
 

@@ -1,18 +1,21 @@
-<h4> Current total tokens: {{data.tokens}}</h4>
+<h4> Current total tokens: {{data.tokens}}  Current total tokens with Pending: {{newTotal.listtokens}}</h4>
 <br>
 
 <h4> Current Pending Lists: </h4>
-<div ng-if="list.pendinglists === undefined ">
+<div ng-if="!list.pendinglists">
             No Current List Items
 </div>
-<div ng-if="list.pendinglists !== undefined">
+<div ng-if="list.pendinglists">
 
     <ul class="unstyled">
         <li ng-repeat="aList in list.pendinglists">
-            Date Created: {{aList.createdOn}}
+            <input type="checkbox" ng-model="aList.Accepted" ng-init="aList.listtokens = 0; newTotal.listtokens = 0">
+            Date Created: {{localTime(aList.createdOn)}}
+            <br>
+            Current List tokens: {{aList.listtokens}}
             <ul class="unstyled">
                 <li ng-repeat="item in aList.items">
-                    <input type="checkbox" ng-model="item.status">
+                    <input type="checkbox" ng-model="item.status" ng-change="updateTotal(aList, item.status, true)" ng-init="updateTotal(aList, item.status)">
                     <span>{{item.label}} </span>
                 </li>
             </ul>
