@@ -132,7 +132,7 @@ describe('All AdminDataServices checks: ', function(){
 
             });
 
-            it('should remove send a copy of this list to the archive list', function () {
+            it('should send a copy of this list to the archive list', function () {
 
             });
 

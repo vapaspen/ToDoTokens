@@ -16,7 +16,23 @@ AdminDataServices.factory('FetchAUsersListData', ['DBURL', '$firebaseObject', fu
 }]);
 
 AdminDataServices.factory('ArchivePendingLists', ['DBURL', function (DBURL) {
-    return function (userID, list) {
+    return function (user, archivedlists, pendinglists, key) {
+        var totalTokensURL, totalTokensRef, newTotalTokens, list;
+
+        list = pendinglists[key]
+
+        list.Accepted = true;
+
+        newTotalTokens = user.tokens + list.listtokens;
+
+        totalTokensURL = DBURL + 'users/' + user.ID + '/tokens';
+
+
+        totalTokensRef = new Firebase(totalTokensURL);
+        totalTokensRef.set(newTotalTokens);
+
+        archivedlists[key] = list;
+        pendinglists[key] = {}
 
     };
 }]);

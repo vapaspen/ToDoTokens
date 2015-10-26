@@ -8,17 +8,23 @@
 <div ng-if="list.pendinglists">
 
     <ul class="unstyled">
-        <li ng-repeat="aList in list.pendinglists">
-            <input type="checkbox" ng-model="aList.Accepted" ng-init="aList.listtokens = 0; newTotal.listtokens = 0">
-            Date Created: {{localTime(aList.createdOn)}}
-            <br>
-            Current List tokens: {{aList.listtokens}}
-            <ul class="unstyled">
-                <li ng-repeat="item in aList.items">
-                    <input type="checkbox" ng-model="item.status" ng-change="updateTotal(aList, item.status, true)" ng-init="updateTotal(aList, item.status)">
-                    <span>{{item.label}} </span>
-                </li>
-            </ul>
+        <li ng-repeat="(key, aList) in list.pendinglists">
+            <div ng-if="key != 'stub'">
+                <span class="glyphicon glyphicon-ok" type="button" ng-init="aList.listtokens = 0; newTotal.listtokens = 0" ng-click="archiveList(list.pendinglists, key)"></span>
+
+                Date Created: {{localTime(aList.createdOn)}}
+                <br>
+                Current List tokens: {{aList.listtokens}}
+                <ul class="unstyled">
+                    <li ng-repeat="item in aList.items">
+                        <input type="checkbox" ng-model="item.status" ng-change="updateTotal(aList, item.status, true)" ng-init="updateTotal(aList, item.status)" />
+                        <span>{{item.label}} </span>
+                    </li>
+                </ul>
+            </div>
+            <div ng-if="key === 'stub'">
+                <span>End of List</span>
+            </div>
         </li>
     </ul>
 </div>

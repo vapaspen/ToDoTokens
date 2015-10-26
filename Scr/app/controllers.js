@@ -24,7 +24,7 @@ app.controller('AdminHomeCtrl', ['$scope', 'FetchUsers', function ($scope, Fetch
 }]);
 
 
-app.controller('UserAdminCtrl', ['$scope','$routeParams','FetchAUser', 'FetchAUsersListData', 'UpdateCurrentListTotalTokens',  function($scope, $routeParams, FetchAUser, FetchAUsersListData, UpdateCurrentListTotalTokens){
+app.controller('UserAdminCtrl', ['$scope', '$route' ,'$routeParams','FetchAUser', 'FetchAUsersListData', 'UpdateCurrentListTotalTokens', 'ArchivePendingLists',  function($scope, $route, $routeParams, FetchAUser, FetchAUsersListData, UpdateCurrentListTotalTokens, ArchivePendingLists){
 
     $scope.data = FetchAUser($routeParams.userID);
     FetchAUsersListData($scope, $routeParams.userID);
@@ -48,5 +48,9 @@ app.controller('UserAdminCtrl', ['$scope','$routeParams','FetchAUser', 'FetchAUs
 
     }
 
+    $scope.archiveList = function (pendinglists, key) {
+        ArchivePendingLists($scope.data, $scope.list.archivedlists, pendinglists, key);
+        window.load();
+    }
 
 }]);
