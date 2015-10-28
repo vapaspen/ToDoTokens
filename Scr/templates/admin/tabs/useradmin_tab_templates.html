@@ -1,1 +1,46 @@
-List Templates Tab
+<div ng-controller="UserAdminTemplateCtrl">
+    <h4 ng-init="create.newTemplatecheck = 'hide'">View edit and Create List Templates</h4>
+
+    <div ng-switch="create.newTemplatecheck">
+        <div ng-switch-when='new'>
+
+
+            <button ng-click="templatesRef.push(emptyTemplate); create.newTemplatecheck = 'hide'">Create New Template</button> <button ng-click="create.newTemplatecheck = 'hide'">Cancel</button>
+        </div>
+        <div ng-switch-when='hide'>
+            <button ng-click="create.newTemplatecheck = 'new'">Make new Template</button>
+        </div>
+    </div>
+    <br>
+    <ul class="unstyled">
+        <li ng-repeat="(key, template) in ListTemplats" ng-if="template">
+            <div ng-class="{templateNotActive: template.isActive === false}">
+                <b ng-click="ListTemplats[key]=null" class="deleteElement largeDelete glyphicon glyphicon-remove-sign"></b><b></b>
+                <br>
+                <br>
+                <b> Days to display Template</b>
+                <br>
+                <span ng-repeat="(key, day) in template.daysOfTheWeek">{{getDayName(key)}}<input type="checkbox" ng-model="template.daysOfTheWeek[key]" />   </span>
+                <br/>
+                <br>
+                <b>Time to start the Template</b>
+                <br>
+                <span>Start Hour <input type="number" ng-model="template.startHour" min="0" max="23"/></span>
+                <span>Start Min <input type="number" ng-model="template.startMin" min="0" max="50" step="10"/></span>
+                <br>
+                <b> Is this template active?</b> <input type="checkbox" ng-model="template.isActive" />
+                <br>
+                <br>
+                <b>Items in this Template: </b>
+                <br>
+                <span ng-repeat="(itemKey, item) in template.items" ng-if="item"><b ng-click="template.items[itemKey]=null" class="deleteElement glyphicon glyphicon-remove-sign"></b><input type="text" ng-model="item.label" /><br> </span>
+                <br>
+                <span><input type="text" ng-model="template.newItem" ng-init="template.newItem = ''"/><button ng-click="addNewItem(key, template.newItem); template.newItem = ''">Add Item</button></span>
+                <br>
+            </div>
+            <br>
+        </li>
+    </ul>
+</div>
+
+

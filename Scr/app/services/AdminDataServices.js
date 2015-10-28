@@ -16,23 +16,76 @@ AdminDataServices.factory('FetchAUsersListData', ['DBURL', '$firebaseObject', fu
 }]);
 
 AdminDataServices.factory('ArchivePendingLists', ['DBURL', function (DBURL) {
-    return function (user, archivedlists, pendinglists, key) {
-        var totalTokensURL, totalTokensRef, newTotalTokens, list;
+    return function (user, lists, key) {
+        var totalTokensURL, totalTokensRef, newTotalTokens, list, archivedlists, pendinglists;
 
-        list = pendinglists[key]
+        pendinglists = lists.pendinglists
+        archivedlists = lists.archivedlists;
 
+        list = pendinglists[key];
         list.Accepted = true;
 
         newTotalTokens = user.tokens + list.listtokens;
 
         totalTokensURL = DBURL + 'users/' + user.ID + '/tokens';
 
-
         totalTokensRef = new Firebase(totalTokensURL);
         totalTokensRef.set(newTotalTokens);
 
         archivedlists[key] = list;
-        pendinglists[key] = {}
+        pendinglists[key] = null;
+    };
+}]);
+
+AdminDataServices.factory('UpdateTotalTokens', ['DBURL', function (DBURL) {
+    return function (user, modToTotal) {
+        var totalTokensURL, totalTokensRef, newTotalTokens;
+
+        newTotalTokens = user.tokens + modToTotal;
+
+        totalTokensURL = DBURL + 'users/' + user.ID + '/tokens';
+
+        if (newTotalTokens < 0) {
+            alert('Cant not set tokens to less then 0.');
+            return modToTotal;
+        }
+        totalTokensRef = new Firebase(totalTokensURL);
+        totalTokensRef.set(newTotalTokens);
+        return 0;
+    };
+}]);
+
+AdminDataServices.factory('FetchAllTemplatesLinked', ['DBURL', '$firebaseObject', function (DBURL, $firebaseObject) {
+    return function (scope, userID) {
+        var templatesURL, templatesRef, syncObject;
+
+        templatesURL = DBURL + 'lists/' + userID + '/listtemplats';
+
+        templatesRef = new Firebase(templatesURL);
+        scope.templatesRef = templatesRef;
+        syncObject = $firebaseObject(templatesRef);
+        syncObject.$bindTo(scope, "ListTemplats");
+    };
+}]);
+
+
+AdminDataServices.factory('AddNewItemToTemplate', ['DBURL', function (DBURL) {
+    return function (userID, templatsKey, value) {
+        var templatesItemsURL, templatesItemsRef, item;
+
+        if (!value) {
+            alert('Please enter an item name');
+            return
+        }
+        item = {
+            "label":value,
+            "status":false
+        }
+        templatesItemsURL = DBURL + 'lists/' + userID + '/listtemplats/' + templatsKey + '/items';
+        templatesItemsRef = new Firebase(templatesItemsURL);
+
+        templatesItemsRef.push(item);
+
 
     };
 }]);

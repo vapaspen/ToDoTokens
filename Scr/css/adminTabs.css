@@ -1,0 +1,11 @@
+.templateNotActive {
+    color: #8E8E8E;
+}
+
+.deleteElement {
+    color:#CC0000;
+}
+
+.largeDelete {
+    font-size:110%
+}

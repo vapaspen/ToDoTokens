@@ -178,7 +178,6 @@ UserDataServices.factory('FindMostRecentTemplate', ['UpDateAndArchiveCurrent', f
                     }
                 }
             }
-
             listStatusAndStorage.newList = found;
 
             if (!listStatusAndStorage.newList) {
@@ -188,7 +187,6 @@ UserDataServices.factory('FindMostRecentTemplate', ['UpDateAndArchiveCurrent', f
                 }
             }
         }
-
 
         //move to next step.
         UpDateAndArchiveCurrent(userID, listStatusAndStorage);

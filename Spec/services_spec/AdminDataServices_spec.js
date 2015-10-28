@@ -128,17 +128,17 @@ describe('All AdminDataServices checks: ', function(){
                 expect(typeof ArchivePendingLists).toEqual('function');
             });
 
-            it('should update the total tokens based on given tokens on this list.', function () {
+            //it('should update the total tokens based on given tokens on this list.', function () {
 
-            });
+            //});
 
-            it('should send a copy of this list to the archive list', function () {
+            //it('should send a copy of this list to the archive list', function () {
 
-            });
+            //});
 
-            it('should remove this list from the pending list.', function () {
+            //it('should remove this list from the pending list.', function () {
 
-            });
+            //});
 
         });
     });
