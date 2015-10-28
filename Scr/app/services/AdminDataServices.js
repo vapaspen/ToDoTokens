@@ -26,7 +26,6 @@ AdminDataServices.factory('ArchivePendingLists', ['DBURL', function (DBURL) {
         list.Accepted = true;
 
         newTotalTokens = user.tokens + list.listtokens;
-
         totalTokensURL = DBURL + 'users/' + user.ID + '/tokens';
 
         totalTokensRef = new Firebase(totalTokensURL);

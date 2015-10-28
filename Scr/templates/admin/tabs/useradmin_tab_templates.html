@@ -15,7 +15,7 @@
     <ul class="unstyled">
         <li ng-repeat="(key, template) in ListTemplats" ng-if="template">
             <div ng-class="{templateNotActive: template.isActive === false}">
-                <b ng-click="ListTemplats[key]=null" class="deleteElement largeDelete glyphicon glyphicon-remove-sign"></b><b></b>
+                <b ng-click="ListTemplats[key]=null" class="deleteElement largeDelete glyphicon glyphicon-remove-sign"></b><b>Template: {{$index}}</b>
                 <br>
                 <br>
                 <b> Days to display Template</b>
