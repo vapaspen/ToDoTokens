@@ -1,4 +1,4 @@
-<h4 ng-init="newTotal.listtokens = 0"> Current total tokens: {{data.tokens}}  Current total tokens with Pending: {{data.tokens + newTotal.listtokens + modTotalTokens }}</h4>
+<h4 ng-init="newTotal.listtokens = 0"> Current total tokens: {{data.tokens}}  <!--Current total tokens with Pending: {{data.tokens + newTotal.listtokens + modTotalTokens }}--></h4>
 <h5>Change totken total: </h5> <input type="number" ng-model="modTotalTokens" ng-init="modTotalTokens = 0"  min="-999" max="999"/> <button ng-click="modTotalTokens = tokenUpdate(modTotalTokens)"> Update</button>
 <br>
 <h4> Current Pending Lists: </h4>
@@ -15,7 +15,7 @@
                 Date Created: {{localTime(aList.createdOn)}}
                 <br>
                 Current List tokens: {{aList.listtokens}}
-                <ul class="unstyled">
+                <ul class="unstyled" ng-if="aList">
                     <li ng-repeat="item in aList.items">
                         <input type="checkbox" ng-model="item.status" ng-change="updateTotal(aList, item.status, true)" ng-init="updateTotal(aList, item.status)" />
                         <span>{{item.label}} </span>
